@@ -1,2 +1,2 @@
-# cocoa_desy6
+# cocoa_des_y6
 Forecasts for a DES Y6 analysis
