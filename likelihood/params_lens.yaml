@@ -11,7 +11,7 @@ DES_DZ_L1:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^1
+  latex: \Delta z_\mathrm{l,DES}^1
 DES_DZ_L2:
   prior:
     dist: norm
@@ -22,7 +22,7 @@ DES_DZ_L2:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^2
+  latex: \Delta z_\mathrm{l,DES}^2
 DES_DZ_L3:
   prior:
     dist: norm
@@ -33,7 +33,7 @@ DES_DZ_L3:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^3
+  latex: \Delta z_\mathrm{l,DES}^3
 DES_DZ_L4:
   prior:
     dist: norm
@@ -44,7 +44,7 @@ DES_DZ_L4:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^4
+  latex: \Delta z_\mathrm{l,DES}^4
 DES_DZ_L5:
   prior:
     dist: norm
@@ -55,7 +55,7 @@ DES_DZ_L5:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^5
+  latex: \Delta z_\mathrm{l,DES}^5
 DES_DZ_L6:
   prior:
     dist: norm
@@ -66,19 +66,19 @@ DES_DZ_L6:
     loc: 0.0
     scale: 0.005
   proposal: 0.005
-  latex: \Delta z_\mathrm{l,LSST}^5
+  latex: \Delta z_\mathrm{l,DES}^6
 DES_DZ_L7:
   value: 0.0
-  latex: \Delta z_\mathrm{l,LSST}^7
+  latex: \Delta z_\mathrm{l,DES}^7
 DES_DZ_L8:
   value: 0.0
-  latex: \Delta z_\mathrm{l,LSST}^8
+  latex: \Delta z_\mathrm{l,DES}^8
 DES_DZ_L9:
   value: 0.0
-  latex: \Delta z_\mathrm{l,LSST}^9
+  latex: \Delta z_\mathrm{l,DES}^9
 DES_DZ_L10:
   value: 0.0
-  latex: \Delta z_\mathrm{l,LSST}^{10}
+  latex: \Delta z_\mathrm{l,DES}^{10}
 # Bin bias parameters
 # NOTE: reference values taken from Table II of https://arxiv.org/pdf/2601.14859
 DES_B1_1:
@@ -90,7 +90,7 @@ DES_B1_1:
     loc: 1.54
     scale: 0.15
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^1
+  latex: b_\mathrm{1-DES}^1
 DES_B1_2:
   prior:
     min: 0.8
@@ -100,7 +100,7 @@ DES_B1_2:
     loc: 1.81
     scale: 0.15
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^2
+  latex: b_\mathrm{1-DES}^2
 DES_B1_3:
   prior:
     min: 0.8
@@ -110,7 +110,7 @@ DES_B1_3:
     loc: 1.85
     scale: 0.15
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^3
+  latex: b_\mathrm{1-DES}^3
 DES_B1_4:
   prior:
     min: 0.8
@@ -120,7 +120,7 @@ DES_B1_4:
     loc: 1.76
     scale: 0.15
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^4
+  latex: b_\mathrm{1-DES}^4
 DES_B1_5:
   prior:
     min: 0.8
@@ -130,7 +130,7 @@ DES_B1_5:
     loc: 1.93
     scale: 0.1
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^5
+  latex: b_\mathrm{1-DES}^5
 DES_B1_6:
   prior:
     min: 0.8
@@ -140,7 +140,7 @@ DES_B1_6:
     loc: 1.90
     scale: 0.1
   proposal: 0.1
-  latex: b_\mathrm{1-LSST}^5
+  latex: b_\mathrm{1-DES}^6
 DES_B1_7:
   value: 0.0
 DES_B1_8:
@@ -149,170 +149,170 @@ DES_B1_9:
   value: 0.0
 DES_B1_10:
   value: 0.0
-  latex: b_\mathrm{1-LSST}^{10}
+  latex: b_\mathrm{1-DES}^{10}
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 DES_B2_1:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^1
+  latex: b_\mathrm{2-DES}^1
 DES_B2_2:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^2
+  latex: b_\mathrm{2-DES}^2
 DES_B2_3:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^3
+  latex: b_\mathrm{2-DES}^3
 DES_B2_4:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^4
+  latex: b_\mathrm{2-DES}^4
 DES_B2_5:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^5
+  latex: b_\mathrm{2-DES}^5
 DES_B2_6:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^6
+  latex: b_\mathrm{2-DES}^6
 DES_B2_7:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^7
+  latex: b_\mathrm{2-DES}^7
 DES_B2_8:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^8
+  latex: b_\mathrm{2-DES}^8
 DES_B2_9:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^9
+  latex: b_\mathrm{2-DES}^9
 DES_B2_10:
   value: 0.0
-  latex: b_\mathrm{2-LSST}^{10}
+  latex: b_\mathrm{2-DES}^{10}
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 DES_BMAG_1:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^1
+  latex: b_\mathrm{BMAG-DES}^1
 DES_BMAG_2:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^2
+  latex: b_\mathrm{BMAG-DES}^2
 DES_BMAG_3:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^3
+  latex: b_\mathrm{BMAG-DES}^3
 DES_BMAG_4:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^4
+  latex: b_\mathrm{BMAG-DES}^4
 DES_BMAG_5:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^5
+  latex: b_\mathrm{BMAG-DES}^5
 DES_BMAG_6:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^6
+  latex: b_\mathrm{BMAG-DES}^6
 DES_BMAG_7:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^7
+  latex: b_\mathrm{BMAG-DES}^7
 DES_BMAG_8:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^8
+  latex: b_\mathrm{BMAG-DES}^8
 DES_BMAG_9:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^9
+  latex: b_\mathrm{BMAG-DES}^9
 DES_BMAG_10:
   value: 0.0
-  latex: b_\mathrm{BMAG-LSST}^{10}
+  latex: b_\mathrm{BMAG-DES}^{10}
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 DES_B3NL_1:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^1
+  latex: b_\mathrm{B3NL-DES}^1
 DES_B3NL_2:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^2
+  latex: b_\mathrm{B3NL-DES}^2
 DES_B3NL_3:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^3
+  latex: b_\mathrm{B3NL-DES}^3
 DES_B3NL_4:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^4
+  latex: b_\mathrm{B3NL-DES}^4
 DES_B3NL_5:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^5
+  latex: b_\mathrm{B3NL-DES}^5
 DES_B3NL_6:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^6
+  latex: b_\mathrm{B3NL-DES}^6
 DES_B3NL_7:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^7
+  latex: b_\mathrm{B3NL-DES}^7
 DES_B3NL_8:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^8
+  latex: b_\mathrm{B3NL-DES}^8
 DES_B3NL_9:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^9
+  latex: b_\mathrm{B3NL-DES}^9
 DES_B3NL_10:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^{10}
+  latex: b_\mathrm{B3NL-DES}^{10}
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 DES_BK_1:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^1
+  latex: b_\mathrm{K-DES}^1
 DES_BK_2:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^2
+  latex: b_\mathrm{K-DES}^2
 DES_BK_3:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^3
+  latex: b_\mathrm{K-DES}^3
 DES_BK_4:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^4
+  latex: b_\mathrm{K-DES}^4
 DES_BK_5:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^5
+  latex: b_\mathrm{K-DES}^5
 DES_BK_6:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^6
+  latex: b_\mathrm{K-DES}^6
 DES_BK_7:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^7
+  latex: b_\mathrm{K-DES}^7
 DES_BK_8:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^8
+  latex: b_\mathrm{K-DES}^8
 DES_BK_9:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^9
+  latex: b_\mathrm{K-DES}^9
 DES_BK_10:
   value: 0.0
-  latex: b_\mathrm{B3NL-LSST}^{10}
+  latex: b_\mathrm{K-DES}^{10}
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
 # Point Mass parameters
 DES_PM1:
   value: 0.0
-  latex: PM_\mathrm{LSST}^1
+  latex: PM_\mathrm{DES}^1
 DES_PM2:
   value: 0.0
-  latex: PM_\mathrm{LSST}^2
+  latex: PM_\mathrm{DES}^2
 DES_PM3:
   value: 0.0
-  latex: PM_\mathrm{LSST}^3
+  latex: PM_\mathrm{DES}^3
 DES_PM4:
   value: 0.0
-  latex: PM_\mathrm{LSST}^4
+  latex: PM_\mathrm{DES}^4
 DES_PM5:
   value: 0.0
-  latex: PM_\mathrm{LSST}^5
+  latex: PM_\mathrm{DES}^5
 DES_PM6:
   value: 0.0
-  latex: PM_\mathrm{LSST}^6
+  latex: PM_\mathrm{DES}^6
 DES_PM7:
   value: 0.0
-  latex: PM_\mathrm{LSST}^7
+  latex: PM_\mathrm{DES}^7
 DES_PM8:
   value: 0.0
-  latex: PM_\mathrm{LSST}^8
+  latex: PM_\mathrm{DES}^8
 DES_PM9:
   value: 0.0
-  latex: PM_\mathrm{LSST}^9
+  latex: PM_\mathrm{DES}^9
 DES_PM10:
   value: 0.0
-  latex: PM_\mathrm{LSST}^{10}
+  latex: PM_\mathrm{DES}^{10}

@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "data_contract": "synthetic fiducials; shipped dummy identity covariance and ones mask",
+    "generated_utc": "20261007T230553860664Z",
+    "omp_num_threads": 4,
+    "tolerance_scope": "software regression guards, not survey precision",
+    "vector_atol": 1e-14,
+    "vector_rtol": 1e-08
+  },
+  "example1_nla": 0.0,
+  "example1_tatt": 0.0,
+  "example2_nla": 0.0,
+  "example2_tatt": 0.0
+}

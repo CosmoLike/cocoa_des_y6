@@ -1,0 +1,216 @@
+{
+  "date": "2026-10-07",
+  "scope": "Initial DES Y6 modernization; software integration and selected numerical diagnostics.",
+  "project_base_commit": "868b17f44be29fad0f7e7666e1726f695faf7029",
+  "core_commit": "959bb1d9fb54deafa6fe934c0327054bdede8a5e",
+  "source_sha256": {
+    "covariance/compute_covariance.py": "ce71073fe224448b263448acfea265f7ad06aac642b74e6966e4cd16f9d143d2",
+    "covariance/default.yaml": "db0adb3f33973caa46a623decbd6cbb65d30c59261b6cc1fef90ef8d35f82a46",
+    "covariance/des_y6_covariance.py": "2481bbaaa0ac11ed32552e161a9b66e5872d2275ecd8322c6ebb15b3fcea2e9e",
+    "interface/cosmolike_des_y6_interface.py": "c1371f7cb49440d18fa87cae93ef9a26b7a5cb5113d70c55d5ae7ac7edd51a2f",
+    "interface/des_y6_notebook.py": "1f661fed63f8d87665124dff85042a14e2bfa0ec398af28f36a184d010610cf3",
+    "interface/interface.cpp": "98b6b110f1cb3d89f57e57c72f089ade03de3f4f21081cb4dc1118517863d2c5",
+    "likelihood/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "likelihood/_cosmolike_prototype_base.py": "c8509be4122a60ba47e34d1d01422868058c7918c1d8c358f74db7f2fd6f7ea2",
+    "likelihood/combo_2x2pt.py": "1768be189f4a0c52a0d82cf87a116deba37f9d87f5a2882a734f32a000b4fa09",
+    "likelihood/combo_2x2pt.yaml": "3e5d1cb3652e2830d48f316e9d6dfc46c7f1152e0275a0c18f1d927f29b86d15",
+    "likelihood/combo_3x2pt.py": "b54ad063f59cfb00e601dac8b4ee187444435ffb8087a86e8768189044cd1fe7",
+    "likelihood/combo_3x2pt.yaml": "6fe55a1a02c5141fcc681d1bfdc254c8dd6cfb195e93a49a46319a853cd9f54d",
+    "likelihood/combo_xi_gg.py": "1bbb82a8bbc2126b4cc30790ad7cc70fc66983af733a81852336dc0b870bfb4d",
+    "likelihood/combo_xi_gg.yaml": "8ee2794bc87a50edc667358633782bfe442f4b5a570bd0109e4be92e47415350",
+    "likelihood/combo_xi_ggl.py": "06b509d6035361ace8073cc3993533dd871bb6d243a0aca90bfad644b2d4d07a",
+    "likelihood/combo_xi_ggl.yaml": "3e5d1cb3652e2830d48f316e9d6dfc46c7f1152e0275a0c18f1d927f29b86d15",
+    "likelihood/cosmic_shear.py": "43adaf693961eb614b07135fe3b1f94dc0357835fbbef08aa3030b082f6d4b78",
+    "likelihood/cosmic_shear.yaml": "0a684dde866634e5169683a05c58f8bfdbe1c3716c9f7651af411f728594c0d7",
+    "likelihood/dataset_validation.py": "f485e64147bc4f5a5c9ae7852517eb27b62a5055f0707156b7cd015f717e7d7a",
+    "likelihood/params_lens.yaml": "13887b4deeae20fe4afe2369e0154665ff63804a4482ed1f3a5e1a53ad42fe7b",
+    "likelihood/params_source.yaml": "7c8e1d0f004a64fe613ad3eb6aacf78887b4546639d595d154319a60ba95401c",
+    "scripts/compile_des_y6.sh": "1f0e532cf5f1af309335466eaad9cad24b22d5ed2b2ed5fbafaa1ae5d6c4c9a1",
+    "scripts/start_des_y6.sh": "97ec562ceecf6bfd7261973876468ed4214f145b56cae21fa01f4c0b497a4eb3",
+    "scripts/stop_des_y6.sh": "658a7abb006f9bb5d199cc310ddb5039e251c5bcea2ae56f415fad1a21894006",
+    "tests/covariance/conftest.py": "00e582db6c9305db67c1b66cc190c947f2c21007462a4948040ebd67ffe6f9ff",
+    "tests/covariance/test_forecast.py": "c948bdd74f7493e06ef85fbab15c0de713b929cf6043f1c915fde0e00060fd46"
+  },
+  "makefile_sha256": "b7a2f163e5d9dd84e9988d898ec8b262b8afa2327c2fb95abbff49c3ce5cdaf1",
+  "pytest": {
+    "unique_cases": 27,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "xml_sha256": {
+      "data-vector.xml": "c3f79766c3761d42736c24cc7ac57f3ac15ce9eee5d90d57b3841c77fcbc3749",
+      "followup.xml": "e2665da82fa39d15bfa644e86ab9f02626ee34f48cabd4a5edda978f773c855a",
+      "probe-selections.xml": "35c948154f6599ea72d695bfbe3f797a650e9ca9e6798261ea921dc75c4fa2d7",
+      "linear-power-final.xml": "abae2e447506ddbba22a0e7f3e386349ba36c9b6dfe4737e4cedd0ede59f4d8a"
+    }
+  },
+  "build_checks": {
+    "disabled": {
+      "mode": "disabled",
+      "has_covariance": false,
+      "vectors": {
+        "example1_nla": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example1_tatt": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example2_nla": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example2_tatt": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        }
+      }
+    },
+    "debug": {
+      "mode": "debug",
+      "has_covariance": true,
+      "vectors": {
+        "example1_nla": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example1_tatt": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example2_nla": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        },
+        "example2_tatt": {
+          "bitwise_equal": true,
+          "max_abs_difference": 0.0,
+          "chi2": 0.0
+        }
+      },
+      "covariance_adapter_check": "passed"
+    }
+  },
+  "full_real_covariance": {
+    "size": 1300,
+    "components": {
+      "gaussian": {
+        "finite": true,
+        "symmetric_exact": true,
+        "cli_wrapper_bitwise_equal": true,
+        "minimum_normalized_eigenvalue": 0.0075202086682651
+      },
+      "ssc": {
+        "finite": true,
+        "symmetric_exact": true,
+        "cli_wrapper_bitwise_equal": true,
+        "minimum_normalized_eigenvalue": -4.249153936903941e-15
+      },
+      "cng": {
+        "finite": true,
+        "symmetric_exact": true,
+        "cli_wrapper_bitwise_equal": true,
+        "minimum_normalized_eigenvalue": -0.49054304019464856
+      },
+      "total": {
+        "finite": true,
+        "symmetric_exact": true,
+        "cli_wrapper_bitwise_equal": true,
+        "minimum_normalized_eigenvalue": 0.0075909950726672296
+      }
+    },
+    "archive_sha256": {
+      "production_covariance.npz": "a3ec9499457cdc15a3c8af34a726bbf5c25900effbd52e14f26a099cd095de5e",
+      "forecast_real.npz": "2068d651593b800a9a7706195ccaa718a7408fbc0019223061d8dfe2ff377902"
+    },
+    "equal_arrays": [
+      "signal",
+      "ssc_normalization_signal",
+      "rows",
+      "coordinate",
+      "coarse_ell",
+      "pair_area_sr2"
+    ],
+    "selected_size": 541,
+    "selected_minimum_correlation_eigenvalue": 0.007838083728620118
+  },
+  "gaussian_nonlimber_refinement": {
+    "project": "des_y6",
+    "nonlimber_lmax": 1000,
+    "nonlimber_nchi": 4097,
+    "scope": "Gaussian, no IA, non-Limber refinement only",
+    "minimum_noisy_field_eigenvalue": 2.9095782976470555e-09,
+    "real": {
+      "size": 1300,
+      "base_min_eigenvalue": 0.00770839497516482,
+      "fine_min_eigenvalue": 0.007708394496895332,
+      "ratio_min": 0.9999447344252252,
+      "ratio_max": 1.0000008970225387,
+      "max_mode_change": 5.5265574774754356e-05
+    },
+    "fourier": {
+      "size": 600,
+      "base_min_eigenvalue": 0.01557793618997457,
+      "fine_min_eigenvalue": 0.015577935991959401,
+      "ratio_min": 0.9999473110653538,
+      "ratio_max": 1.0000008966929756,
+      "max_mode_change": 5.26889346461612e-05
+    },
+    "elapsed_s": 9.104341416037641
+  },
+  "notebooks": {
+    "EXAMPLE_EVALUATE1.ipynb": {
+      "sha256": "95a7e12e3a8e48640b014abec6da754da30aadffdc78b7736a6bf59efe1c6227",
+      "executed_code_cells": 9,
+      "embedded_png_figures": 6,
+      "figures_visually_checked": true
+    },
+    "EXAMPLE_EVALUATE2.ipynb": {
+      "sha256": "168f396ee043243fd806735a4b6c6f4ebd4550f60ac775e6bdcc9c12c4b0a78e",
+      "executed_code_cells": 6,
+      "embedded_png_figures": 3,
+      "figures_visually_checked": true
+    },
+    "EXAMPLE_EVALUATE_COVARIANCE.ipynb": {
+      "sha256": "81634396c621dbbb04546d443c8ddf7a1f2c064962cfe5e9699a54edeac29a95",
+      "executed_code_cells": 7,
+      "embedded_png_figures": 3,
+      "figures_visually_checked": true
+    }
+  },
+  "smoke_run": {
+    "construction_seconds": 49.25,
+    "initialization_seconds": 0.5,
+    "openmp_threads": 8,
+    "blas_threads": 1,
+    "scope": "One full production CLI run on Apple M2 Pro; not a repeated benchmark."
+  },
+  "input_preservation": {
+    "original_data_files_unchanged": true,
+    "nuisance_priors_unchanged": true,
+    "parameter_display_labels_corrected": true,
+    "layout": 1300,
+    "inactive_supplied_covariance_layout": 1690,
+    "inactive_covariance_not_loaded_or_cropped": true
+  },
+  "test_repairs": [
+    "Initial input test incorrectly required nonnegative n(z); the supplied tiny negative lens tails are now preserved byte-for-byte instead. Original failed XML is retained externally.",
+    "Initial notebook build_model call used an incorrect Cobaya keyword; corrected to the installed API and executed all cells again.",
+    "External Gaussian refinement launcher initially lacked the shared helper Python path; retried unchanged numerical calculation with the correct path."
+  ],
+  "limits": [
+    "The active likelihood uses dummy data and unit covariance; its chi-squared cannot establish DES observational accuracy.",
+    "Non-Limber refinement changes cutoff and distance-grid intervals only; this is not quadrature, interpolation, transform or Fisher convergence certification.",
+    "The connected four-point contribution need not be positive alone; full total and Gaussian positivity were checked without eigenvalue clipping.",
+    "Gaussian supports non-Limber gg/gs and NLA/TATT; SSC/cNG keep their massless-neutrino, zero-IA, linear-bias Limber model.",
+    "Archived baseline hashes describe reference generation; subsequent labels, input guards and the restored linear-power option do not refreeze those references."
+  ]
+}

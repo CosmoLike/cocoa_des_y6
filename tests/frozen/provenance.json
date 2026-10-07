@@ -1,0 +1,36 @@
+{
+  "absent_optional_descriptor_files": [
+    "BARYON_PCA_ANTILLES_Y1.txt"
+  ],
+  "excluded_unselected_files": [
+    "DESY6.cov",
+    "DESY6.mask"
+  ],
+  "input_sha256": {
+    "DESY6.dataset": "7eebe25478ec6c143ab1cf3ea8c369f8c6696269950e6fa7d4ea672cfdc32d9e",
+    "DESY6_lens.nz": "88a8f51f5149e57cfb9b3b47ffada91f03c61cfcf38c10b862f21d8ccf20b27b",
+    "DESY6_source.nz": "c3f4f1a296e233cc2a9c11e984316c60772cfb6c621c2750834d9abc07c67b24",
+    "baryons_logPkR.h5": "1ab5cc0604925089787dd775740b368db2a83a0d10c88af54f3b3f4bfa33570d",
+    "dummy.cov": "49217d9cbe9462ee271b7886016092d3b04cb62e81455e93322dd33a74c84d79",
+    "dummy.modelvector": "8aa619722f9b818085e254eeafe9a3c37850007d91e8f6bc36ae7f8d072500f7",
+    "ones.mask": "9d7311e243c0cc9029f799bdd6312a4b056d44ed421425c1902acd0c0605adc0"
+  },
+  "source_sha256": {
+    "interface/cosmolike_des_y6_interface.py": "0c282780c2f97644f4eb90787a1757c87c53c6f442e85cdeae20e93877e20c08",
+    "interface/interface.cpp": "98b6b110f1cb3d89f57e57c72f089ade03de3f4f21081cb4dc1118517863d2c5",
+    "likelihood/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "likelihood/_cosmolike_prototype_base.py": "d331e1210d94a96d9f34c52e37c2d49acac31ee8875c10580a0b06af6740bce0",
+    "likelihood/combo_2x2pt.py": "1768be189f4a0c52a0d82cf87a116deba37f9d87f5a2882a734f32a000b4fa09",
+    "likelihood/combo_2x2pt.yaml": "3e5d1cb3652e2830d48f316e9d6dfc46c7f1152e0275a0c18f1d927f29b86d15",
+    "likelihood/combo_3x2pt.py": "b54ad063f59cfb00e601dac8b4ee187444435ffb8087a86e8768189044cd1fe7",
+    "likelihood/combo_3x2pt.yaml": "6fe55a1a02c5141fcc681d1bfdc254c8dd6cfb195e93a49a46319a853cd9f54d",
+    "likelihood/combo_xi_gg.py": "1bbb82a8bbc2126b4cc30790ad7cc70fc66983af733a81852336dc0b870bfb4d",
+    "likelihood/combo_xi_gg.yaml": "8ee2794bc87a50edc667358633782bfe442f4b5a570bd0109e4be92e47415350",
+    "likelihood/combo_xi_ggl.py": "06b509d6035361ace8073cc3993533dd871bb6d243a0aca90bfad644b2d4d07a",
+    "likelihood/combo_xi_ggl.yaml": "3e5d1cb3652e2830d48f316e9d6dfc46c7f1152e0275a0c18f1d927f29b86d15",
+    "likelihood/cosmic_shear.py": "43adaf693961eb614b07135fe3b1f94dc0357835fbbef08aa3030b082f6d4b78",
+    "likelihood/cosmic_shear.yaml": "0a684dde866634e5169683a05c58f8bfdbe1c3716c9f7651af411f728594c0d7",
+    "likelihood/params_lens.yaml": "b770bece00968374655be2a973285ce65be5b1cceac2ded1acfc5fcc968753ea",
+    "likelihood/params_source.yaml": "7c8e1d0f004a64fe613ad3eb6aacf78887b4546639d595d154319a60ba95401c"
+  }
+}
