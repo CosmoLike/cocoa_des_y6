@@ -1,7 +1,12 @@
+#!/bin/bash
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
 # ------------------------------------------------------------------------------
-if [ -z "${IGNORE_COSMOLIKE_DES_Y6_CODE}" ]; then
+if [ -n "${IGNORE_COSMOLIKE_DES_Y6_CODE:-}" ]; then
+  return 99
+fi
+
+if [ -z "${IGNORE_COSMOLIKE_DES_Y6_CODE:-}" ]; then
 
   if [ -z "${ROOTDIR}" ]; then
     source start_cocoa.sh || { pfail 'ROOTDIR'; return 1; }
@@ -11,7 +16,7 @@ if [ -z "${IGNORE_COSMOLIKE_DES_Y6_CODE}" ]; then
   ( source "${ROOTDIR:?}/installation_scripts/flags_check.sh" ) || return 1;
     
   unset_env_vars () {
-    unset -v PROJECT FOLDER
+    unset -v PROJECT FOLDER PACKDIR PRINTNAME
     cdroot || return 1;
   }
 
@@ -64,25 +69,27 @@ if [ -z "${IGNORE_COSMOLIKE_DES_Y6_CODE}" ]; then
   # Name to be printed on this shell script messages
   PRINTNAME="DES_Y6"
 
-  ptop "COMPILING ${PRINTNAME:?}" || return 1
+  ptop "COMPILING ${PRINTNAME:?}" || { unset_all; return 1; }
 
   # ---------------------------------------------------------------------------
   # cleaning any previous compilation
+
   rm -rf "${PACKDIR:?}"/interface/*.o
   rm -rf "${PACKDIR:?}"/interface/*.so
-  cd "${PACKDIR}"/interface
-  make -f MakefileCosmolike clean || { error "${EC2:?}"; return 1; }
+
+  cdfolder "${PACKDIR:?}/interface" || return 1;
+
+  make -f MakefileCosmolike clean \
+      >${OUT1:?} 2>${OUT2:?} || { error "${EC2:?}"; return 1; }
 
   # ---------------------------------------------------------------------------
-  cd "${PACKDIR}"/interface
 
-  (export LD_LIBRARY_PATH=${CONDA_PREFIX:?}/lib:$LD_LIBRARY_PATH && \
-   export LD_LIBRARY_PATH=${ROOTDIR:?}/.local/lib:$LD_LIBRARY_PATH && \
-   make -j $MNT -f MakefileCosmolike all || { error "${EC8:?}"; return 1; })
+  make -j $MNT -f MakefileCosmolike all \
+      >${OUT1:?} 2>${OUT2:?} || { error "${EC8:?}"; return 1; }
 
-  cd ${ROOTDIR:?}
+  cdroot || { unset_all; return 1; }
 
-  pbottom "COMPILING ${PRINTNAME:?}" || return 1
+  pbottom "COMPILING ${PRINTNAME:?}" || { unset_all; return 1; }
 
   # ---------------------------------------------------------------------------
 
@@ -90,6 +97,5 @@ if [ -z "${IGNORE_COSMOLIKE_DES_Y6_CODE}" ]; then
 
 fi
 
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-# -----------------------------------------------------------------------------
+
+return 55; # setup/compile_cocoa caches only a completed build

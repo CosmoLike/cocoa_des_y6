@@ -1,0 +1,26 @@
+{
+  "_comment": "Generated SHA-256 pins; regenerate deliberately, never edit references by hand.",
+  "files": {
+    "frozen/EXAMPLE_EVALUATE1.yaml": "ced74d2a6a59746082892db7908c8c7111e283f5f2b1e6ceccc71fb261f196c1",
+    "frozen/EXAMPLE_EVALUATE2.yaml": "b5f16efee65294e6b59fd820452b510e7fbfd99cf82519731571df897a6df273",
+    "frozen/data/DESY6.dataset": "7eebe25478ec6c143ab1cf3ea8c369f8c6696269950e6fa7d4ea672cfdc32d9e",
+    "frozen/data/DESY6_lens.nz": "88a8f51f5149e57cfb9b3b47ffada91f03c61cfcf38c10b862f21d8ccf20b27b",
+    "frozen/data/DESY6_source.nz": "c3f4f1a296e233cc2a9c11e984316c60772cfb6c621c2750834d9abc07c67b24",
+    "frozen/data/baryons_logPkR.h5": "1ab5cc0604925089787dd775740b368db2a83a0d10c88af54f3b3f4bfa33570d",
+    "frozen/data/dummy.cov": "49217d9cbe9462ee271b7886016092d3b04cb62e81455e93322dd33a74c84d79",
+    "frozen/data/dummy.modelvector": "8aa619722f9b818085e254eeafe9a3c37850007d91e8f6bc36ae7f8d072500f7",
+    "frozen/data/ones.mask": "9d7311e243c0cc9029f799bdd6312a4b056d44ed421425c1902acd0c0605adc0",
+    "frozen/data/synthetic_des_y6.dataset": "de5dd4d235d0ed0aa16235bf9bef780f917b19ce580c354d10f4f07c0fb12a5c",
+    "frozen/data/synthetic_des_y6.modelvector": "4b4e0c12880c24e378639f8716c7aca8ad79db8c7a368956397d9289117b3b9b",
+    "frozen/data/tatt_des_y6.dataset": "ad7f02976af03e46736db0e35e99b1bd3ced9fef89123366664e059702459ffc",
+    "frozen/data/tatt_des_y6.modelvector": "d4eaf057c0918f8f5eac27ba42dbe08a32f8f24fbf330034d95cc56dd4f89ac5",
+    "frozen/example1_nla.npy": "44941c79fbdb2ead9042e054d14969194bb2e88991b865fef0cb15aa9a744f4f",
+    "frozen/example1_tatt.npy": "37709209f6aa88049dca21756ddaf13c1a6290a5f69ae45b059e85ae8d0493c5",
+    "frozen/example2_nla.npy": "d71f59f639a8e7b58f15ef702a14f1e778cbfb795b643ebff8bd62990031dc32",
+    "frozen/example2_tatt.npy": "e74a5758006ad731aaf7c6d19ddbb9c07c5bc9339b8b8bdb0a38f21184aa17d6",
+    "frozen/frozen_config_example1.py": "0337a6d0c79c311afefcd53681ca650d1a90faa851f686da80045b812ec58722",
+    "frozen/frozen_config_example2.py": "ca2cfea37f78508de91b00f8700ee1a543cd883652a9486ad3387528e7cf8393",
+    "frozen/provenance.json": "5b7895f4ba78ae5c39035672525dd295fa0e302a04c50c61509aa6df46ec8cd5",
+    "frozen/reference_chi2.json": "4c941871aa438816b842439f09892db89ed45beaca0d8d1111df373dc0f14e5a"
+  }
+}

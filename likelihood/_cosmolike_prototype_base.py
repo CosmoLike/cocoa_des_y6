@@ -1,19 +1,24 @@
+# Python 2/3 compatibility - must be first line
 from __future__ import absolute_import, division, print_function
 import os
 import numpy as np
+import scipy
 from scipy.interpolate import interp1d
+import sys
 import time
 import functools
+from collections.abc import Mapping
 
 # Local
 from cobaya.likelihoods.base_classes import DataSetLikelihood
 from cobaya.log import LoggedError
 from getdist import IniFile
+from .dataset_validation import validate_layout
 
 import euclidemu2 as ee2
+import math
 
 from contextlib import contextmanager
-
 @contextmanager
 def timer(label):
   t0 = time.perf_counter()
@@ -44,32 +49,104 @@ survey = "DES"
 
 class _cosmolike_prototype_base(DataSetLikelihood):
 
+  @classmethod
+  def get_modified_defaults(cls, defaults, input_options={}):
+    """Apply the yaml option `fixed_params` to the default parameters.
+
+    cobaya calls this class method when it reads the defaults of a
+    combination (its yaml file, e.g. combo_xi_gg.yaml), before it merges
+    them with the user's yaml. The parameters of a combination come from
+    `params: !defaults [params_lens, params_source]`, and the `!defaults`
+    tag builds the whole `params` mapping from those files, so the same
+    yaml cannot change one entry of it. A combination that fixes some of
+    these parameters lists them under `fixed_params` instead (combo_xi_gg
+    fixes the point masses, which act only on galaxy-galaxy lensing).
+    Each entry replaces the parameter's default info with the cobaya merge
+    rule: a value drops prior, ref and proposal and keeps the other keys
+    (the latex label). A user yaml can override `fixed_params` like any
+    other option of the likelihood. Combinations without `fixed_params`
+    keep their defaults unchanged.
+
+    Arguments:
+      defaults = the combination's default options (dict, `params`
+                 included), changed in place
+      input_options = the user's options for this likelihood (dict)
+
+    Returns:
+      defaults, with each parameter of `fixed_params` replaced.
+    """
+    fixed = input_options.get("fixed_params", defaults.get("fixed_params"))
+    params = defaults.get("params") or {}
+    for p, info in (fixed or {}).items():
+      old = params.get(p)
+      new = {}
+      if isinstance(old, Mapping):
+        # keep every key of the default info except the sampling ones
+        for key, value in old.items():
+          if key not in ("prior", "ref", "proposal"):
+            new[key] = value
+      if isinstance(info, Mapping):
+        new.update(info)
+      else:
+        new["value"] = info
+      params[p] = new
+    if params:
+      defaults["params"] = params
+    return defaults
+
   def initialize(self, probe):
     ini = IniFile(os.path.normpath(os.path.join(self.path, self.data_file)))
     self.probe = probe
-    if self.data_vector_file is None: self.data_vector_file = ini.relativeFileName('data_file')
-    if self.mask_file is None:        self.mask_file        = ini.relativeFileName('mask_file')
-    self.cov_file         = ini.relativeFileName('cov_file')
-    self.lens_file        = ini.relativeFileName('nz_lens_file')
-    self.source_file      = ini.relativeFileName('nz_source_file')
-    self.lens_ntomo       = ini.int("lens_ntomo")                   
-    self.source_ntomo     = ini.int("source_ntomo")                 
-    self.ntheta           = ini.int("n_theta")
+    if self.data_vector_file is None:
+      self.data_vector_file = ini.relativeFileName('data_file')
+    self.cov_file = ini.relativeFileName('cov_file')
+    if self.mask_file is None:
+      self.mask_file = ini.relativeFileName('mask_file')
+    self.lens_file = ini.relativeFileName('nz_lens_file')
+    self.source_file = ini.relativeFileName('nz_source_file')
+    self.lens_ntomo = ini.int("lens_ntomo")
+    self.source_ntomo = ini.int("source_ntomo")
+    self.ntheta = ini.int("n_theta")
     self.theta_min_arcmin = ini.float("theta_min_arcmin")
     self.theta_max_arcmin = ini.float("theta_max_arcmin")
 
+    # Probe selection masks a full-layout vector; all input files must
+    # therefore describe every bin, even for the shear-only likelihood.
+    size = self.ntheta * (self.source_ntomo*(self.source_ntomo+1)
+                          + self.lens_ntomo*self.source_ntomo + self.lens_ntomo)
+    validate_layout(data_file=self.data_vector_file, mask_file=self.mask_file,
+                    cov_file=self.cov_file, size=size)
+
     # ------------------------------------------------------------------------   
-    tmp = int(1000 + 250*self.accuracyboost)
+    tmp=int(1000 + 250*self.accuracyboost)
     self.z_interp_1D = np.concatenate((np.linspace(0.0,3.0,max(100,int(0.80*tmp)),endpoint=False),
                                        np.linspace(3.0,50.1,max(100,int(0.40*tmp)),endpoint=False),
                                        np.linspace(1070,1100,max(50,int(0.10*tmp)))),axis=0)
     self.len_z_interp_1D = len(self.z_interp_1D)
 
-    tmp=int(min(120 + 20*self.accuracyboost,250))
-    # zmax of the hybrid emulator is 50 (why 50? Only relevant if CMB lensing included)
-    self.z_interp_2D = np.concatenate((np.linspace(0,3.0,max(50,int(0.75*tmp)),endpoint=False), 
-                                       np.linspace(3.0,49.99,max(30,int(0.25*tmp)))),axis=0)
+    # Keep the P(k,z) grids nested: refining a uniform block multiplies
+    # its interval count and retains every original sample. The CAMB
+    # transfer calculation remains on its own fixed 140-redshift grid;
+    # these extra nodes sample its smooth interpolator below z=50.
+    zref = getattr(self, "pk_z_refinement", 1)
+    if not (float(zref) == int(zref) and int(zref) >= 1):
+      raise LoggedError(self.log, "pk_z_refinement = %s: must be a positive "
+                        "integer", zref)
+    m = int(min(2**np.ceil(np.log2(max(1.0, self.accuracyboost))), 16))
+    m = m*int(zref)
+    self.z_interp_2D = np.concatenate((np.linspace(0,3.0,105*m,endpoint=False),
+                                       np.linspace(3.0,49.99,34*m + 1)),axis=0)
     self.len_z_interp_2D = len(self.z_interp_2D)
+    # CAMB's transfer module caps the number of requested redshifts at
+    # 256, so the list handed to CAMB through the Pk_interpolator
+    # requirement stays at this boost-independent 140-node grid (the
+    # m = 1 grid above). The denser nested nodes only re-evaluate the
+    # smooth z-spline CAMB builds from these transfer redshifts when
+    # the cosmolike tables are filled, so raising the boost refines
+    # exactly the table resampling that produced the jitter, and the
+    # CAMB side never exceeds its cap.
+    self.z_interp_2D_camb = np.concatenate((np.linspace(0,3.0,105,endpoint=False),
+                                            np.linspace(3.0,49.99,35)),axis=0)
     
     self.log10k_interp_2D = np.linspace(-4.99,2.0,int(1250+250*self.accuracyboost))
     self.len_log10k_interp_2D = len(self.log10k_interp_2D)
@@ -84,8 +161,38 @@ class _cosmolike_prototype_base(DataSetLikelihood):
     else:
       ci.set_log_level_info()
 
+    ci.init_photoz_conventions(
+        interpolation_type=int(getattr(self, "photoz_interpolation_type", 0)),
+        zmid_convention=int(getattr(self, "photoz_zmid_convention", 0)))
+
+    ci.init_fpt_internal_boost(
+        internal_boost=float(getattr(self, "internal_accuracyboost", 1.0)))
+
+    # the non-Limber FFTLog chi grid, refined on top of the accuracy boost
+    # (narrow lens bins need it: see init_nonlimber_accuracy_boost)
+    ci.init_nonlimber_accuracy_boost(
+        nonlimber_boost=float(getattr(self, "nonlimber_accuracyboost", 1.0)))
+
+    ci.init_adopt_limber_gs(
+        adopt_limber_gs=int(getattr(self, "adopt_limber_gs", 1)))
+
+    ci.init_adopt_limber_gg(
+        adopt_limber_gg=int(getattr(self, "adopt_limber_gg", 0)))
+    # 0 = perturbative galaxy bias, 1 = halo-model (HOD) galaxy power;
+    # always set, so a model never inherits the previous model's value
+    ci.init_include_HOD_GX(
+        include_HOD_GX=int(getattr(self, "include_HOD_GX", 0)))
+    # 0 = the init_IA model, 1 = halo-model IA (Fortuna et al. 2021)
+    ci.init_include_halo_IA(
+        include_halo_IA=int(getattr(self, "include_halo_IA", 0)))
+    # Halo statistics use cold dark matter + baryons. The emulator path
+    # has no separate cb spectrum and uses the documented small-scale ratio.
+    if self.use_emulator == 2:
+      self.log.info("Halo P_cb uses P_lin/(1 - f_nu)^2 because the "
+                    "emulators have no cb spectrum (an approximation; "
+                    "see get_neutrino_inputs)")
+
     if self.use_emulator == 1:
-      # With emulator
       ci.init_redshift_distributions_from_files(
           lens_multihisto_file=self.lens_file,
           lens_ntomo=int(self.lens_ntomo), 
@@ -95,7 +202,6 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       ci.init_accuracy_boost(accuracy_boost=0.35, 
                              integration_accuracy=-1) # seems enough to compute PM
     else:
-      # Without emulator
       ci.init_ntable_lmax(lmax=int(self.lmax))
       ci.init_accuracy_boost(accuracy_boost=self.accuracyboost, 
                              integration_accuracy=int(self.integration_accuracy))
@@ -121,32 +227,40 @@ class _cosmolike_prototype_base(DataSetLikelihood):
       ci.init_data_real(self.cov_file, self.mask_file, self.data_vector_file)
 
       if (int(self.IA_model) == 0) and (int(self.IA_code) == 1):
-   		  # Fall back to C FASTPT under NLA
+        # Fall back to C FASTPT under NLA
         self.IA_code = 0
       ci.init_IA(ia_model = int(self.IA_model), 
                 ia_redshift_evolution = int(self.IA_redshift_evolution),
                 ia_code = int(self.IA_code))
 
-      if self.probe != "xi":
+      if self.probe not in ("xi", "3x2pt_ss_sk_sk", "2x2pt_ss_sk"):
         # (b1, b2, bs2, b3, bmag). 0 = one amplitude per bin
         ci.init_bias(bias_model=self.bias_model)
 
       if self.non_linear_emul == 1:
         self.emulator = ee2.PyEuclidEmulator()
 
+      # Apply one baryon prescription at a time: direct suppression,
+      # simulation ratios, or principal components.
+      if self.external_baryon_suppression:
+          self.use_baryon_pca = False
+          self.add_baryons_on_dv = False
+
       if self.create_baryon_pca:
+        self.external_baryon_suppression = False
         self.use_baryon_pca = False
         self.allsims = ini.relativeFileName('all_sims_hdf5_file')
       else:
         if self.add_baryons_on_dv:
+          self.external_baryon_suppression = False
           sim = self.which_bsims_add_on_dv
           self.allsims = ini.relativeFileName('all_sims_hdf5_file')
-          ci.init_baryons_contamination(sim=sim, allsims=self.allsims)
+          ci.init_baryons_contamination(sim = sim, allsims=self.allsims)
 
     if self.use_baryon_pca:
       baryon_pca_file = ini.relativeFileName('baryon_pca_file')
       self.npcs = 4
-      ci.set_baryon_pcs(eigenvectors=np.loadtxt(baryon_pca_file))
+      ci.set_baryon_pcs(eigenvectors = np.loadtxt(baryon_pca_file))
       self.log.info('use_baryon_pca = True')
       self.log.info('baryon_pca_file = %s loaded', baryon_pca_file)
     else:
@@ -196,12 +310,16 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           } # in Mpc
         }     
     elif self.use_emulator == 2:
-      _requirements_ = {
+      return {
         "As": None,
         "H0": None,
         "omegam": None,
+        "omegab": None,
+        "mnu": None,
+        "w": None,
+        "wa": None,
         "Pk_interpolator": {
-          "z": self.z_interp_2D,
+          "z": self.z_interp_2D_camb,
           "k_max": self.kmax_boltzmann * self.accuracyboost,
           "nonlinear": (True,False),
           "vars_pairs": ([("delta_tot", "delta_tot")])
@@ -210,6 +328,36 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           "z": self.z_interp_1D
         }, # in Mpc
       }
+    else:
+      _requirements_ = {
+        "As": None,
+        "H0": None,
+        "omegam": None,
+        "omegab": None,
+        "Pk_interpolator": {
+          "z": self.z_interp_2D_camb,
+          "k_max": self.kmax_boltzmann * self.accuracyboost,
+          "nonlinear": (True,False),
+          "vars_pairs": ([("delta_tot", "delta_tot")])
+        },
+        "comoving_radial_distance": {
+          "z": self.z_interp_1D
+        }, # in Mpc
+        "Cl": { # DONT REMOVE THIS - SOME WEIRD BEHAVIOR IN CAMB WITHOUT WANTS_CL
+          'tt': 0
+        }
+      }
+      # JVR NOTE: our likelihood must communicate with the baryons theory
+      #           which (k,z) values to compute the baryon suppression factor
+      # NOTE: log10k_interp_2D is in 1/Mpc, the baryons theory must
+      #       do the conversion if necessary
+      if self.external_baryon_suppression:
+          _requirements_["baryon_suppression"] = {
+              "z": self.z_interp_2D,
+              "k": np.power(
+                  10.0, self.log10k_interp_2D
+              ),
+          }
       # Also need Python FAST-PT if IA_code == 1
       if (self.IA_code == 1):
         _requirements_["IA_PS"] = None
@@ -219,33 +367,15 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         _requirements_["mnu"] = None
         _requirements_["w"] = None
         _requirements_["wa"] = None
-      return _requirements_
-    else:
-      _requirements_ = {
-        "As": None,
-        "H0": None,
-        "omegam": None,
-        "omegab": None,
-        "mnu": None,
-        "w": None,
-        "wa": None,
-        "Pk_interpolator": {
-          "z": self.z_interp_2D,
-          "k_max": self.kmax_boltzmann * self.accuracyboost,
-          "nonlinear": (True,False),
-          "vars_pairs": ([("delta_tot", "delta_tot")])
-        },
-        "comoving_radial_distance": {
-          "z": self.z_interp_1D 
-        }, # in Mpc
-        "Cl": { # DONT REMOVE THIS - SOME WEIRD BEHAVIOR IN CAMB WITHOUT WANTS_CL
-          'tt': 0
-        }
-      }
-      # Also need Python FAST-PT if IA_code == 1
-      if (self.IA_code == 1):
-        _requirements_["IA_PS"] = None
-        _requirements_["bias_PS"] = None
+      # Omega_nu h^2 of the massive neutrinos (CAMB's omnuh2) and, for
+      # the cold dark matter + baryon halo field, the linear P_cb
+      # (get_neutrino_inputs)
+      _requirements_["omnuh2"] = None
+      # Keep both fields available to the likelihood and direct halo readers.
+      # CAMB obtains them from the same transfer-function calculation.
+      _requirements_["Pk_interpolator"]["vars_pairs"] = [
+        ("delta_tot", "delta_tot"),
+        ("delta_nonu", "delta_nonu")]
       return _requirements_
 
   # ------------------------------------------------------------------------
@@ -263,7 +393,8 @@ class _cosmolike_prototype_base(DataSetLikelihood):
                       np.power(10.0,self.log10k_interp_2D)).flatten(order='F')+np.log(h**3)
 
       if self.non_linear_emul == 0:
-        lnPNL = lnPL
+        # External baryon suppression below modifies only the nonlinear slot.
+        lnPNL = lnPL.copy()
       elif self.non_linear_emul == 1:
         params = {
           'Omm'  : self.provider.get_param("omegam"),
@@ -307,19 +438,80 @@ class _cosmolike_prototype_base(DataSetLikelihood):
           extrap_kmax=2.5e2*self.accuracyboost).logP(self.z_interp_2D,
           np.power(10.0,self.log10k_interp_2D)).flatten(order='F')+np.log(h**3)   
       else:
-        raise LoggedError(self.log, "non_linear_emul = %d is an invalid option", non_linear_emul)
+        raise LoggedError(self.log, "non_linear_emul = %d is an invalid option", self.non_linear_emul)
 
-      G_growth = np.sqrt(PKL.P(self.z_interp_2D,0.0005)/PKL.P(0,0.0005))*(1+self.z_interp_2D)
-      G_growth /= G_growth[-1]
+      # G on the dense 1D z grid (clipped to the P(k) interpolator range):
+      # cosmolike reads G linearly in z, and on the coarse 2D grid
+      # (dz ~ 0.03) the linear read misses D by up to 9e-5 and the
+      # growth rate f = 1 - (1+z) dlnG/dz (the slope of the table) by
+      # 1%; on the 1D grid (dz = 0.003) by 1e-6 and 0.2%. PKL is a cubic
+      # spline in z through CAMB's transfer redshifts, so this asks CAMB
+      # for no extra redshifts (about 0.1 ms per evaluation). The table
+      # stays divided by G at the last z_2D node (z_growth ends below
+      # it); cosmolike's growfac divides by G(0), so D(z=0) = 1.
+      z_growth = self.z_interp_1D[self.z_interp_1D <= self.z_interp_2D[-1]]
+      # G is sampled at growth_k (default 0.05/Mpc), a sub-horizon scale.
+      # At k = 5e-4/Mpc (about 2 H0/c) CAMB's dark-energy perturbations
+      # change the growth by 0.5-0.9% at w != -1 (z = 0.5 to 2), while every
+      # reader of G (IA amplitudes, one-loop D^4, sigma(M, z), the growth
+      # rate f) describes sub-horizon modes; with 0.06 eV neutrinos the
+      # growth varies by 0.03% above 0.05/Mpc (cosmolike_core skill,
+      # references/growth_factor_measurements.md)
+      growth_k = float(getattr(self, "growth_k", 0.05))
+      G_growth = np.sqrt(PKL.P(z_growth,growth_k)/PKL.P(0,growth_k))*(1+z_growth)
+      z_norm = self.z_interp_2D[-1]
+      G_growth /= np.sqrt(PKL.P(z_norm,growth_k)/PKL.P(0,growth_k))*(1+z_norm)
+      # Apply baryon suppression factors from theory block (if enabled)
+      # The baryon suppression theory block computes S(k,z) for each requested z
+      # and applies calibration masking. Here we simply retrieve and apply those factors.
+      if self.external_baryon_suppression:
+        try:
+          supp_dict = self.provider.get_result("baryon_suppression")
+          self.log.info(
+            "Applying baryon suppression: %d redshifts from theory block",
+            len(supp_dict),
+          )
+
+          for i, z_val in enumerate(self.z_interp_2D):
+            if z_val in supp_dict:
+              sup_array = supp_dict[z_val]
+              lnbt_baryon = np.log(sup_array)
+              lnPNL[i :: self.len_z_interp_2D] += lnbt_baryon
+              self.log.debug(
+                  "Applied baryon suppression at z=%.3f: "
+                  "min_sup=%.6f, max_sup=%.6f",
+                  z_val,
+                  sup_array.min(),
+                  sup_array.max(),
+              )
+            else:
+              self.log.warning(
+                  "baryon_suppression dict does not contain z=%.3f; skipping",
+                  z_val,
+              )
+        except Exception as e:
+            self.log.error(
+                "Failed to retrieve baryon suppression from theory block: %s; "
+                "skipping baryon suppression",
+                str(e),
+            )
+
+      # the massive neutrinos: Omega_nu h^2 and, for the cold dark matter
+      # + baryon halo field, the linear P_cb (get_neutrino_inputs)
+      (omegan2, lnPL_cb) = self.get_neutrino_inputs(lnPL=lnPL, h=h)
 
       ci.set_cosmology(
         omegam=self.provider.get_param("omegam"),
+        omegab=self.provider.get_param("omegab"),
+        omegan2=omegan2,
         H0=self.provider.get_param("H0"),
         log10k_2D=self.log10k_interp_2D-np.log10(h), #h/Mpc
         z_2D=self.z_interp_2D,
         lnP_linear=lnPL, 
+        lnP_linear_cb=lnPL_cb,
         lnP_nonlinear=lnPNL, 
         G=G_growth,
+        z_G=z_growth,
         z_1D=self.z_interp_1D,
         chi=self.provider.get_comoving_radial_distance(self.z_interp_1D)*h # convert to Mpc/h
       )
@@ -348,6 +540,66 @@ class _cosmolike_prototype_base(DataSetLikelihood):
         z=self.z_interp_1D,
         chi=self.provider.get_comoving_radial_distance(self.z_interp_1D)*h
       )
+
+  # ------------------------------------------------------------------------
+  # ------------------------------------------------------------------------
+  # ------------------------------------------------------------------------
+  def get_neutrino_inputs(self, lnPL, h):
+    """Return the massive-neutrino inputs of ci.set_cosmology.
+
+    omegan2 is Omega_nu h^2 of massive neutrinos today, part of omegam.
+    Halo variances use the cold dark matter + baryon spectrum P_cb at
+    each redshift. Their mass-radius relation and mass-function density
+    use rho_crit (Omega_m - Omega_nu). Total matter remains available
+    for lensing and for the separate total-matter variance.
+
+    lnPL_cb is ln P_cb on the same (k,z) grid and in the same units as
+    lnPL. Both spectra are provided so direct halo readers can be used
+    even after a likelihood evaluation that did not count halos.
+
+    The two theory paths:
+      CAMB (use_emulator = 0): omegan2 is CAMB's omnuh2 and P_cb its
+        ("delta_nonu", "delta_nonu") linear spectrum, read like P_lin
+        (get_requirements asks for both).
+      emulators (use_emulator = 2): the emulators take no neutrino
+        parameter (they were trained at mnu = 0.06 eV) and have no cb
+        spectrum. omegan2 = mnu (3.046/3)^0.75/94.0708, the neutrino
+        density the yaml's omegach2 subtracts, and
+        P_cb = P_lin/(1 - f_nu)^2 with f_nu = omegan2/(omegam h^2): the
+        ratio of the two spectra far above the neutrino free-streaming
+        scale, an approximation on cluster scales. Its measured size is
+        in projects/des_cluster/README.md.
+
+    Arguments:
+      lnPL = ln P_lin [(Mpc/h)^3], flattened as set_cosmology's
+             lnP_linear (Fortran order: k index slow, z index fast)
+      h    = H0/100
+
+    Returns:
+      (omegan2, lnPL_cb): a float and a numpy array of lnPL's shape.
+    """
+    if self.use_emulator == 2:
+      mnu = self.provider.get_param("mnu")
+      omegan2 = mnu*(3.046/3.0)**0.75/94.0708
+    else:
+      omegan2 = self.provider.get_param("omnuh2")
+
+    if self.use_emulator == 2:
+      # P_cb/P_lin = 1/(1 - f_nu)^2 where the neutrinos no longer
+      # cluster (delta_m = (1 - f_nu) delta_cb)
+      f_nu = omegan2/(self.provider.get_param("omegam")*h*h)
+      lnPL_cb = lnPL - 2.0*np.log(1.0 - f_nu)
+    else:
+      # the same k extrapolation, (z, k) grid, flattening and units as
+      # lnPL in set_cosmo_related
+      PKL_cb = self.provider.get_Pk_interpolator(("delta_nonu", "delta_nonu"),
+                                                 nonlinear=False,
+                                                 extrap_kmin=1e-6,
+                                                 extrap_kmax=2.5e2*self.accuracyboost)
+      k_grid = np.power(10.0, self.log10k_interp_2D)
+      lnPL_cb = PKL_cb.logP(self.z_interp_2D, k_grid).flatten(order='F')
+      lnPL_cb = lnPL_cb + np.log(h**3)
+    return (omegan2, lnPL_cb)
 
   # ------------------------------------------------------------------------
   # ------------------------------------------------------------------------

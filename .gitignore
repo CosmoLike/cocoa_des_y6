@@ -1,2 +1,9 @@
 *.so
+*.o
+*.dSYM/
+__pycache__/
+.ipynb_checkpoints/
+.pytest_cache/
 chains/
+/EXAMPLE*.modelvector
+/covariance/*.npz
