@@ -18,6 +18,8 @@ def test_covariance_yaml_uses_environment_threads():
     """The project example has no YAML thread count; the environment wins."""
     u.require_cocoa_environment()
     filename = u.PROJECT_DIR/"EXAMPLE_EVALUATE_COVARIANCE.yaml"
+    # load_run_configuration returns (settings, run options); the name _
+    # receives the settings, which this test does not use.
     _, run = load_run_configuration(filename=filename, survey=survey)
     info = yaml_load_file(file_name=str(filename))
     assert "threads" not in info["covariance"]
@@ -26,7 +28,11 @@ def test_covariance_yaml_uses_environment_threads():
 
 
 def test_covariance_yaml_rejects_thread_key(tmp_path):
-    """A YAML thread key must fail even when its value matches the environment."""
+    """A YAML thread key must fail even when its value matches the environment.
+
+    Arguments:
+      tmp_path = a temporary folder pytest creates for this test
+    """
     u.require_cocoa_environment()
     source = u.PROJECT_DIR/"EXAMPLE_EVALUATE_COVARIANCE.yaml"
     info = yaml_load_file(file_name=str(source))

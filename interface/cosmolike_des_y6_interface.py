@@ -1,7 +1,13 @@
-"""Explain a missing build when Python cannot find the compiled DES Y6 module.
+"""This fallback module explains a missing build of the DES Y6 interface.
 
-Python prefers the adjacent extension module when it is installed. This
-fallback must never load another survey's library under the DES Y6 name.
+The real cosmolike_des_y6_interface is an extension module: a compiled C++
+library (cosmolike_des_y6_interface.so, built from interface.cpp by
+scripts/compile_des_y6.sh) that Python imports like a .py file. When the
+library and this file sit in the same folder, Python imports the library,
+because its import search tries extension modules before source files.
+This file is therefore imported only when the library is absent, and it
+stops at once with an ImportError that says how to build the library. It
+must never load another survey's library under the DES Y6 name.
 """
 
 raise ImportError(

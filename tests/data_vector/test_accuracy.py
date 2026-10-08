@@ -17,11 +17,20 @@ from vector_worker import ACCURACY_SETTINGS
 
 @pytest.mark.parametrize("tatt", (False, True), ids=("NLA", "TATT"))
 def test_accuracy_refinements(tatt, tmp_path):
-    """Measure one changed control at a time over all 1,300 entries."""
+    """Measure one changed control at a time over all 1,300 entries.
+
+    Arguments:
+      tatt = False for the NLA model, True for TATT; pytest.mark.parametrize
+             runs the test once per listed value
+      tmp_path = a temporary folder pytest creates for this test
+    """
     u.require_cocoa_environment()
     u.verify_frozen()
     label = "tatt" if tatt else "nla"
     reference = np.load(u.FROZEN_DIR/f"example1_{label}.npy", allow_pickle=False)
+    # Entry ranges of the four probes in the full layout: 10 source pairs x
+    # 26 angles for xi+ and for xi-, 24 lens-source pairs x 26 for gamma_t,
+    # and 6 lens bins x 26 for w.
     blocks = {
         "xi+": slice(0, 260),
         "xi-": slice(260, 520),
@@ -29,6 +38,10 @@ def test_accuracy_refinements(tatt, tmp_path):
         "w": slice(1144, 1300),
     }
     for setting in ACCURACY_SETTINGS:
+        # internal_accuracyboost refines only the C-FAST-PT grid. Its spectra
+        # enter through the TATT terms, or through one-loop bias terms when
+        # some b2 is nonzero; the frozen point fixes b2 = 0, so under NLA
+        # the setting cannot change the vector.
         if setting == "fastpt" and not tatt:
             continue
         output = tmp_path/f"{setting}.npz"
@@ -39,6 +52,8 @@ def test_accuracy_refinements(tatt, tmp_path):
             vector = result["vector"]
         assert vector.shape == reference.shape
         assert np.all(np.isfinite(vector))
+        # The default run repeats the frozen settings in a fresh process, so
+        # it must reproduce the frozen vector up to floating-point rounding.
         if setting == "default":
             np.testing.assert_allclose(vector, reference, rtol=1.e-8, atol=1.e-14)
         for probe, indices in blocks.items():

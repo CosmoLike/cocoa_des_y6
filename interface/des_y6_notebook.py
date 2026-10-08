@@ -1,13 +1,20 @@
-"""DES Y6 data-vector examples initialized by their actual Cobaya likelihood.
+"""This module prepares the DES Y6 notebook examples through their likelihood.
 
-The YAML file supplies the cosmology, nuisance parameters and numerical
-settings. Cobaya and the project's likelihood prepare the CAMB tables and
-Cosmolike state. The compiled notebook wrappers then expose the intermediate
-angular spectra and correlation functions as NumPy arrays for shared plots.
+build_model reads an example yaml (EXAMPLE_EVALUATE1.yaml or
+EXAMPLE_EVALUATE2.yaml), which supplies the cosmology, the nuisance
+parameters and the numerical settings, and builds a cobaya Model: the
+object that holds the theory code (CAMB) and the project's likelihood and
+evaluates them at a parameter point. evaluate runs that model at the
+yaml's fiducial point, so the CAMB tables and the cosmolike state are
+prepared exactly as in a likelihood run, and then copies the intermediate
+angular spectra and correlation functions from the compiled notebook
+wrappers into numpy arrays for the shared plots.
 
-Use one model per notebook kernel: the compiled interface owns process-wide
-Cosmolike state. These examples use a dummy observed vector and unit covariance;
-their likelihood values have no interpretation as a fit to DES measurements.
+Use one model per notebook kernel (the Python process behind a notebook):
+the compiled interface keeps its cosmolike state in C global variables
+shared by the whole process. These examples use a dummy observed vector
+and unit covariance; their likelihood values have no interpretation as a
+fit to DES measurements.
 """
 
 import os
@@ -38,6 +45,8 @@ def build_model(example):
     """
     if example not in (1, 2):
         raise ValueError(f"example={example}: choose 1 (3x2pt) or 2 (shear)")
+    # This file is interface/des_y6_notebook.py: parents[1] of its path is
+    # the project folder, and two levels above the project is Cocoa/.
     project = Path(__file__).resolve().parents[1]
     cocoa = project.parents[1]
     input_file = project / f"EXAMPLE_EVALUATE{example}.yaml"
@@ -52,6 +61,11 @@ def build_model(example):
             f"{input_file} must contain only {likelihood_name}; "
             "use the matching project example"
         )
+    # The likelihood reads its files from the project's data folder and
+    # writes no model-vector file; CAMB comes from Cocoa's external modules.
+    # get_model only builds the model, so the sampler and output blocks go
+    # (pop with a default removes a key that may be absent); stop_at_error
+    # makes a failed evaluation raise instead of returning -inf.
     info["likelihood"][likelihood_name]["path"] = str(project / "data")
     info["likelihood"][likelihood_name]["print_datavector"] = False
     info["theory"]["camb"]["path"] = str(cocoa / "external_modules/code/CAMB")
@@ -109,7 +123,12 @@ def evaluate(model, point, ell, clustering=False):
         raise ValueError(
             f"OMP_NUM_THREADS={threads}: set a positive integer before starting this notebook"
         )
+    # Restore cosmolike's OpenMP thread count before evaluating: a library
+    # loaded in the notebook can lower it (with_omp_threads in the
+    # likelihood explains why).
     ci.set_omp_threads(n=threads)
+    # cached=False recomputes even when the point equals the previous one,
+    # so the compiled state read below belongs to this evaluation.
     loglikes = model.loglikes(
         params_values=point,
         return_derived=False,

@@ -1,11 +1,20 @@
 """Create the DES Y6 regression baseline from the current compiled code.
 
+The baseline, the "frozen state", is everything the tests compare against,
+stored under tests/frozen/ and pinned by SHA-256 hashes in
+tests/manifest_sha256.json: copies of the referenced input files, one
+generated configuration module per example, the synthetic NLA and TATT
+data vectors, the reference vectors and chi2 values, and a provenance
+record.
+
 Run from Cocoa/ after starting its environment:
     python ./projects/des_y6/tests/generate_frozen_reference.py --overwrite
 
 The first freeze creates references; a later freeze changes what is tested.
 Review every intended numerical change before replacing a baseline. Previous
 state is preserved in tests/.reference_backups/ when --overwrite is used.
+The options --freeze-one, --synthetic-one and --snapshot-one run single
+steps; main() passes them to fresh copies of this script.
 """
 
 import argparse
@@ -17,6 +26,9 @@ import shutil
 import subprocess
 import sys
 
+# Thread counts and MPI must be fixed before numpy, cobaya or cosmolike
+# load, since those libraries read them once; the values match
+# tests/conftest.py.
 os.environ["OMP_NUM_THREADS"] = "4"
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
@@ -25,11 +37,24 @@ os.environ["COBAYA_NOMPI"] = "1"
 
 import cocoa_test_utils as u
 
+# Frozen data folder relative to Cocoa/, the working directory that
+# require_cocoa_environment sets. It is written into the frozen
+# configurations as the likelihood path; the tests replace it by the
+# absolute path when they load them.
 FROZEN_DATA_RELPATH = "./projects/des_y6/tests/frozen/data"
 
 
 def write_json(path, value):
-    """Write a readable, deterministic JSON record."""
+    """Write a readable, deterministic JSON record.
+
+    Arguments:
+      path = pathlib.Path of the file to write
+      value = data JSON can represent (dict, list, number, string)
+
+    Side effects:
+      writes the file with two-space indentation, sorted keys and a final
+      newline.
+    """
     with path.open(mode="w") as output:
         json.dump(obj=value, fp=output, indent=2, sort_keys=True)
         output.write("\n")
@@ -40,6 +65,19 @@ def copy_referenced_inputs():
 
     In particular, the unselected 1690-entry DESY6.cov and DESY6.mask
     are not substituted for the active 1300-entry dummy-data contract.
+
+    Returns:
+      (copied, absent_optional): a dict from each copied file name to its
+      SHA-256 hash, and the list of optional descriptor files that do not
+      exist.
+
+    Raises:
+      FileNotFoundError for a missing required file; ValueError for an
+      input outside data/.
+
+    Side effects:
+      creates tests/frozen/data/ and copies the selected files into it, and
+      the example yaml files into tests/frozen/.
     """
     from cobaya.yaml import yaml_load_file
 
@@ -63,6 +101,7 @@ def copy_referenced_inputs():
         descriptor_name = block["data_file"]
         descriptor_path = data_source/descriptor_name
         entries = {}
+        # Descriptor lines read key = value; text after # is a comment.
         for line in descriptor_path.read_text().splitlines():
             text = line.split("#", 1)[0].strip()
             if "=" in text:
@@ -94,7 +133,22 @@ def copy_referenced_inputs():
 
 
 def freeze_configuration(example, timestamp):
-    """Resolve one example's defaults and save its complete parameter point."""
+    """Resolve one example's defaults and save its complete parameter point.
+
+    Arguments:
+      example = "example1" or "example2"
+      timestamp = UTC time stamp written into the generated module's
+                  docstring
+
+    Raises:
+      ValueError when a sampled parameter has neither an evaluate override
+      nor a ref center.
+
+    Side effects:
+      writes tests/frozen/frozen_config_<example>.py, which defines point
+      (a dict) and yaml_string (the configuration with every default
+      filled in, as yaml text).
+    """
     from cobaya.yaml import yaml_dump, yaml_load_file
 
     configuration = u.EXAMPLES[example]
@@ -102,6 +156,10 @@ def freeze_configuration(example, timestamp):
     override = dict(info["sampler"]["evaluate"]["override"])
     info.pop("sampler", None)
     info.pop("output", None)
+    # Log level 30 (WARNING, in Python's logging levels) and no timing
+    # report. The frozen configuration stores NLA (IA_model = 0), reads the
+    # frozen data and writes no model-vector file; load_frozen_info
+    # switches to TATT when a test asks for it.
     info["debug"] = 30
     info["timing"] = False
     block = info["likelihood"][configuration["likelihood"]]
@@ -109,6 +167,8 @@ def freeze_configuration(example, timestamp):
     block["IA_model"] = 0
     block["print_datavector"] = False
     model = u.make_model(info=info)
+    # model.info() returns the configuration with every default filled in;
+    # packages_path, which depends on the machine, is dropped.
     resolved = model.info()
     resolved.pop("packages_path", None)
     point = {}
@@ -123,6 +183,8 @@ def freeze_configuration(example, timestamp):
                 raise ValueError(f"{example}: sampled {name} has no evaluate override or ref center")
             point[name] = reference
             print(f"{example}: {name} uses explicit ref center {reference}", flush=True)
+    # repr writes point and the yaml text as Python literals, so the
+    # generated module recreates them exactly.
     content = (
         f'"""Generated DES Y6 frozen configuration ({timestamp}); do not edit."""\n\n'
         + "point = " + repr(point) + "\n\n"
@@ -137,6 +199,19 @@ def generate_synthetic_vector(tatt):
     The two IA models receive separate synthetic vectors. Both therefore
     evaluate at their own likelihood minimum instead of measuring distance
     from the arbitrary shipped dummy vector.
+
+    Arguments:
+      tatt = True for the TATT model and point, False for NLA
+
+    Raises:
+      ValueError when the vector is not 1300 finite entries, or the
+      descriptor does not have exactly one data_file line.
+
+    Side effects:
+      writes frozen/data/<synthetic or tatt>_des_y6.modelvector (index and
+      value; %.17e prints 18 significant digits, enough to read every
+      double back exactly) and the matching .dataset descriptor, a copy of
+      the original whose data_file names the new vector.
     """
     import numpy as np
     from cobaya.yaml import yaml_load
@@ -144,6 +219,9 @@ def generate_synthetic_vector(tatt):
 
     example = "example1"
     configuration = u.EXAMPLES[example]
+    # load_frozen_info points data_file at the synthetic descriptor this
+    # function is about to write; the model is evaluated with the frozen
+    # configuration's own descriptor instead (only the model vector is used).
     raw = yaml_load(u._frozen_module(example=example).yaml_string)
     original = raw["likelihood"][configuration["likelihood"]]["data_file"]
     info = u.load_frozen_info(example=example, tatt=tatt)
@@ -174,7 +252,20 @@ def generate_synthetic_vector(tatt):
 
 
 def generate_snapshot(example, tatt):
-    """Save one full-precision baseline and its informative dummy chi2."""
+    """Save one full-precision reference vector and its chi2.
+
+    Arguments:
+      example = "example1" or "example2"
+      tatt = True for the TATT model and point, False for NLA
+
+    Raises:
+      ValueError for a non-finite chi2 or vector entry.
+
+    Side effects:
+      writes frozen/<example>_<nla|tatt>.npy and a temporary
+      <example>_<nla|tatt>_chi2.json, which main() moves into
+      reference_chi2.json.
+    """
     import numpy as np
 
     label = "tatt" if tatt else "nla"
@@ -188,6 +279,19 @@ def generate_snapshot(example, tatt):
 
 
 def main():
+    """Rebuild the frozen state, or run one step of it in this process.
+
+    With a worker option (--freeze-one, --synthetic-one or --snapshot-one)
+    the script runs that single step and returns. Otherwise --overwrite is
+    required: the old frozen state moves to
+    tests/.reference_backups/<timestamp>/, the referenced inputs are
+    copied, and every step runs in a fresh copy of this script, so no C
+    global state of one step reaches the next. reference_chi2.json,
+    provenance.json and the manifest are written last.
+
+    Side effects:
+      replaces tests/frozen/ and tests/manifest_sha256.json.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--freeze-one", choices=tuple(u.EXAMPLES))
@@ -196,6 +300,8 @@ def main():
     parser.add_argument("--tatt", action="store_true")
     parser.add_argument("--timestamp")
     args = parser.parse_args()
+    # `a or b or c` gives the first value that is set (not None), so worker
+    # names the single step requested, or is None.
     worker = args.freeze_one or args.synthetic_one or args.snapshot_one
     if not worker and not args.overwrite:
         parser.error("reference generation requires --overwrite; it changes the regression baseline")
@@ -210,6 +316,8 @@ def main():
         generate_snapshot(example=args.snapshot_one, tatt=args.tatt)
         return
 
+    # UTC time as YYYYMMDDTHHMMSS, then microseconds and Z: it names the
+    # backup folder and stamps the generated files.
     timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     if u.FROZEN_DIR.exists() or u.MANIFEST_FILE.exists():
         backup = u.TESTS_DIR/".reference_backups"/timestamp
@@ -251,6 +359,8 @@ def main():
             reference[key] = json.loads(snapshot.read_text())
             snapshot.unlink()
     write_json(path=u.REFERENCE_FILE, value=reference)
+    # Hashes of the likelihood and interface sources at freeze time: a
+    # record for the reader; no test compares them with the live files.
     sources = {}
     for path in sorted((u.PROJECT_DIR/"likelihood").glob("*")):
         if path.is_file() and path.suffix in (".py", ".yaml"):

@@ -1,4 +1,14 @@
-"""Test environment setup before importing numerical libraries."""
+"""This pytest configuration fixes the thread counts before any library loads.
+
+pytest imports a conftest.py before the test modules of its folder and of
+the folders below, so these settings reach every test. OpenMP (cosmolike's
+parallel C loops) and the BLAS linear-algebra libraries behind numpy read
+their thread counts once, when they load, so the variables are set before
+any numerical import: four OpenMP threads, the count the shared harness
+requires (cocoa_testing.REQUIRED_OMP_THREADS), one BLAS thread, and
+COBAYA_NOMPI = 1, which keeps cobaya from using MPI. The tests folder goes
+first on sys.path, so `import cocoa_test_utils` works from the subfolders.
+"""
 
 from pathlib import Path
 import os
