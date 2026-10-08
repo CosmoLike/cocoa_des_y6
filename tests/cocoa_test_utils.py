@@ -90,7 +90,7 @@ def evaluate_vector(example, tatt, overrides=None):
     return chi2, vector
 
 
-def run_vector_worker(mode, example, tatt, output):
+def run_vector_worker(mode, example, tatt, output, setting=None):
     """Run one numerical check in a fresh process and save an NPZ result.
 
     Every worker has four OpenMP threads and serial BLAS. A failed worker
@@ -111,4 +111,6 @@ def run_vector_worker(mode, example, tatt, output):
     ]
     if tatt:
         command.append("--tatt")
+    if setting is not None:
+        command.extend(["--setting", setting])
     subprocess.run(args=command, env=environment, check=True)
