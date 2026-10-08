@@ -12,9 +12,9 @@ interface and matrix assembly, not full-survey convergence.
 | G, SSC, cNG and total are finite and symmetric | Six-entry forecast |
 | Total equals the sum of components | Six-entry forecast |
 | Total is positive definite | Six-entry forecast |
-| CLI and notebook outputs agree bitwise | Production and wrapper interfaces |
+| CLI and notebook code paths agree bitwise | Production and wrapper backends, six-entry forecast |
 | OpenMP outputs agree bitwise | One versus eight threads, one BLAS thread |
-| Saved matrices, row indices and settings agree with memory | NPZ output |
+| Saved total, row indices and survey settings agree with memory | NPZ output |
 
 We assume the project is installed, the Cocoa Conda environment is active,
 the shell is Bash, and the current folder is `cocoa/Cocoa/`. Run these tests

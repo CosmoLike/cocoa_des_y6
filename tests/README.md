@@ -7,6 +7,14 @@ The DES Y6 tests are divided into two sectors.
 - [Covariance checks](covariance/README.md) cover forecast assembly and its
   documented component checks. Covariance generation must be compiled.
 
+```mermaid
+flowchart TD
+  A["Compiled project"] --> B["data_vector/: predictions, frozen inputs, diagnostics"]
+  E["frozen/ + manifest_sha256.json"] --> B
+  A --> C["Covariance build: unset IGNORE_COSMOLIKE_DES_Y6_COVARIANCE, recompile"]
+  C --> D["covariance/: forecast assembly checks"]
+```
+
 We assume Cocoa and this project are installed, the Cocoa Conda environment
 is active, the shell is Bash, and the current folder is `cocoa/Cocoa/`.
 
@@ -50,8 +58,9 @@ it is not a successful covariance check. Read the sector guide to distinguish
 asserted regressions from advisory accuracy reports.
 
 Frozen configurations and inputs are protected by `manifest_sha256.json`.
-Do not regenerate references to silence an unexplained failure. The sector
-guides document the deliberate reference-update procedure and its limits.
+Do not regenerate references to silence an unexplained failure. The
+[data-vector guide](data_vector/README.md#replace-reference) documents the
+deliberate reference-update procedure and its limits.
 
 Hybrid examples can be checked without sampling:
 

@@ -124,18 +124,23 @@ jupyter notebook --no-browser --port=8888
 | File under `covariance/` | Contents |
 |---|---|
 | `production_covariance.npz` | CLI result: full G, SSC, cNG, total, signal, coordinates, ordering, settings and stage timings. |
-| `forecast_real.npz` | Notebook result: full matrices and resolved inputs. |
+| `forecast_real.npz` | Notebook result: full matrices and resolved inputs. The $`\chi^2`$ sections of both evaluate notebooks read its `total`. |
 | `forecast_selected.npz` | Notebook result after the optional 541-entry selection, with original row indices. |
 | `forecast_camb.npz` | Notebook's prepared CAMB power and background arrays. |
 
-Generated NPZ files in this folder are ignored by Git. The final notebook
+Generated NPZ files in this folder are ignored by Git. The notebook's save
 cell replaces its own output files; files under `data/` remain unchanged.
+The CLI writes the same archive layout: pass
+`--output ./projects/des_y6/covariance/forecast_real.npz` to give the evaluate
+notebooks their covariance without running this notebook.
 
 | Notebook figure | Interpretation |
 |---|---|
 | Matter trispectra | Separate 1h, combined 2h, 3h, 4h and summed terms before survey projection. |
 | Total correlation matrix | Total covariance divided by its diagonal rms products. |
 | Component maps | G, SSC and cNG, normalized by the total diagonal rms products. |
+| Error bars | Standard deviations $`\sqrt{C_{ii}}`$ of the first row of each probe for the Gaussian and the total matrix, then the change of the total relative to the Gaussian, in percent. |
+| Correlations after the cut | The selected total, drawn above the diagonal, beside the selected Gaussian-only matrix, drawn below it, on the 541 `DESY6.mask` entries; differences between mirror-image points are correlations that SSC and cNG add. |
 
 The notebook reports matrix positivity before and after applying
 `DESY6.mask` to both axes. Positivity is a matrix diagnostic; it does not

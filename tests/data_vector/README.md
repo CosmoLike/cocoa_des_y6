@@ -21,8 +21,9 @@ validate a measured DES Y6 likelihood.
 | Linear-power option returns a finite, distinct prediction | Cosmic shear |
 | n(z) setting changes and restoration | Photo-z interpolation and coordinate convention |
 | Invalid data, mask or covariance indices are rejected | Temporary input files |
-| YAML thread keys are rejected | OpenMP threads belong to the environment |
+| A thread key in the covariance YAML is rejected | OpenMP threads belong to the environment |
 | Stored input hashes and descriptor layout are checked | `manifest_sha256.json` |
+| The TATT reference differs from NLA in shear and galaxy–galaxy lensing, not in clustering | Stored reference vectors |
 | Separate accuracy-control refinements | NLA and TATT, every vector entry |
 | Non-Limber gg/gs switches and restoration | NLA and TATT, selected block only |
 | Public hybrid YAMLs on CPU | 3×2pt NLA and cosmic-shear TATT |
@@ -74,9 +75,12 @@ is regenerated, and no HMcode feedback is mixed with the external ratio.
 ## FAQ: Which inputs are tested? <a name="inputs"></a>
 
 The tests store their own configuration and input snapshots in `frozen/`.
-The generator copies only each descriptor and its referenced inputs, then
-records hashes in `manifest_sha256.json`. Every data-vector evaluation
-verifies this manifest before using the snapshot.
+The generator copies the active descriptor with the inputs it references
+and the two evaluate YAMLs, writes the resolved configurations, reference
+vectors and synthetic data vectors, then records the hash of every file
+under `frozen/` in `tests/manifest_sha256.json`. Every data-vector
+evaluation verifies this manifest; the hybrid and BCEmu checks verify it
+too but evaluate the live project inputs.
 
 The active layout has four source bins, six lens bins and 26 angular bins.
 Its 1,300-entry identity covariance supplies no survey weighting. The separate
@@ -84,16 +88,21 @@ Its 1,300-entry identity covariance supplies no survey weighting. The separate
 active descriptor and are excluded from the snapshot. No verified mapping
 allows that covariance to be cropped into the active layout.
 
-Input-validation tests create temporary malformed files. They check short or
-reordered vectors/masks, fractional or out-of-range covariance indices, and
-missing or duplicated diagonals before the C++ reader is called.
+Input-validation tests create temporary malformed files and pass them to
+the likelihood's layout validator directly: short data vectors or masks,
+a reordered mask, negative, out-of-range, fractional or non-finite
+covariance indices, and missing or duplicated diagonals. The likelihood
+runs the same validator before the C++ reader is called.
 
 ## FAQ: What do the reference comparisons mean? <a name="references"></a>
 
-NLA and TATT each have a stored fiducial vector and resolved configuration.
-The generator uses the corresponding prediction as that configuration's
-test data vector. This checks reproducibility at a known point; its raw
-$`\chi^2`$ has no measured-survey interpretation.
+NLA and TATT each have a stored fiducial vector for each example. Each
+example stores one resolved configuration, in NLA; the tests switch it to
+TATT when they load it. The 3×2pt predictions in NLA and in TATT serve as
+the test data vectors of the two models. The tests compare data vectors,
+not $`\chi^2`$: `frozen/reference_chi2.json` is stored, but no test reads
+it. This checks reproducibility at a known point; a raw $`\chi^2`$ against
+these vectors has no measured-survey interpretation.
 
 | Comparison | Requirement |
 |---|---|
@@ -106,11 +115,16 @@ Assessing physical accuracy needs an appropriate covariance and independent
 interpolation, quadrature and model checks. Passing the reduced covariance
 assembly test does not establish those conditions.
 
-The [initial port validation record](../validation/20261007.json) preserves the
-build checks, full-matrix comparisons, notebook fingerprints and their scope.
+The [validation record 20261007.json](../validation/20261007.json) preserves
+the build checks, full-matrix comparisons, notebook fingerprints and their
+scope for project commit 868b17f. Its source and notebook hashes describe
+that revision: they do not match the current notebooks, and the module
+`interface/des_y6_notebook.py` it fingerprints is not part of the current
+project.
 
-The [expanded example/accuracy validation](../validation/hybrid_accuracy_20261007.json)
-records 35 data-vector checks and the separate covariance adapter check.
+The [example and accuracy validation record](../validation/hybrid_accuracy_20261007.json)
+records 35 data-vector checks and the separate covariance adapter check, with
+the source hashes of project commit 27e745c.
 
 ## FAQ: How can users replace a reference? <a name="replace-reference"></a>
 

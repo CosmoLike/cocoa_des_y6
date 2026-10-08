@@ -3,7 +3,7 @@
 1. [Overview](#overview)
 2. [Installation](#installation)
 3. [Computing data vectors](#data-vectors)
-4. [Baryonic feedback on EXAMPLE_EVALUATE1](#baryons)
+4. [Baryonic feedback](#baryons)
 5. [Computing covariances](#computing_covariances)
 6. [Running Hybrid Cosmolike-ML emulators](#hybrid-emulators)
 7. [Exploring notebooks](#notebooks)
@@ -107,7 +107,7 @@ cobaya-run ./projects/des_y6/EXAMPLE_EVALUATE2.yaml --force
 > [!TIP]
 > For the row ordering and dummy-data limits, see [which inputs the examples use](#inputs).
 
-# Baryonic feedback on EXAMPLE_EVALUATE1 <a name="baryons"></a>
+# Baryonic feedback <a name="baryons"></a>
 
 The ordinary `EXAMPLE_EVALUATE1.yaml` already includes HMcode feedback through
 `halofit_version: mead2020_feedback` and `HMCode_logT_AGN`. To explore an
@@ -139,6 +139,20 @@ its supported redshift range (`above_zmax: unity`). The sampler fiducial
 has `mnu = 0.06 eV`. The [shared baryon provider guide](https://github.com/CosmoLike/cocoa/tree/main/Cocoa/external_modules/code/baryon_suppression)
 explains the available models and their validity ranges.
 
+`setup_cocoa.sh` and `compile_cocoa.sh` install `bfmt` and its emulators unless
+their keys are set. Check that the lines below stay commented out in
+`set_installation_options.sh` before running those scripts; they are by default.
+
+      [Adapted from Cocoa/set_installation_options.sh shell script]
+      #export IGNORE_PYSPK_CODE=1     # SP(k)
+      #export IGNORE_BCEMU_CODE=1     # BCEmu and BCemu2025
+      #export IGNORE_FBRE_CODE=1      # FlamingoBaryonResponseEmulator
+      #export IGNORE_BACCOEMU_CODE=1  # BACCOemu
+      #export IGNORE_BFMT_CODE=1      # Baryon Feedback Theory Block
+
+`EXAMPLE_EVALUATE1_BARYONS.yaml` needs `bfmt` and BCEmu; the notebook study
+[below](#baryons_notebooks) uses every model except BACCOemu.
+
 We assume Cocoa and DES Y6 are installed and compiled, the Cocoa Conda
 environment is active, the shell is Bash, and the current folder is
 `cocoa/Cocoa/`.
@@ -159,6 +173,34 @@ The output is `projects/des_y6/EXAMPLE_BARYONS.modelvector`. The likelihood
 still uses the shipped dummy data and identity covariance. See the
 [data-vector tests](tests/data_vector/README.md) for the suppression and
 restoration check.
+
+## Feedback in the notebooks <a name="baryons_notebooks"></a>
+
+Both evaluate notebooks run HMcode as `mead2020_feedback`. The shared CAMB helper
+passes only the model name, so the notebooks use CAMB's default
+$`\log_{10}(T_{\rm AGN}/{\rm K}) = 7.8`$, where the YAML sets `HMCode_logT_AGN: 7.7`.
+Their feedback sections switch to the gravity-only Takahashi spectrum, so no
+feedback is counted twice:
+
+| Section | Notebooks | What it applies |
+|---|---|---|
+| *Baryonic feedback from tabulated simulations* | Both | Fixed power ratios of nine hydrodynamical simulations from `data/baryons_logPkR.h5`, through `ci.init_baryons_contamination`. |
+| *Baryonic feedback from the `bfmt` theory block* | `EXAMPLE_EVALUATE1.ipynb` | Six parametric models through a minimal Cobaya model (CAMB, `bfmt` and the `one` likelihood): the three SP(k) relations, BCEmu, Flamingo and BCemu2025. |
+
+The `bfmt` study needs the installation above and the forecast covariance of the
+$`\chi^2`$ sections ([Exploring notebooks](#notebooks)). BACCOemu is commented out so
+that the table lists the same six methods as the other projects' notebooks; it
+would run here, since its `omega_baryon` training range starts at 0.04001, below
+this project's `omegab = 0.049`. The table covers the 541 entries of `DESY6.mask`
+against a synthetic data vector equal to the no-feedback prediction, so its
+$`\chi^2`$, $`\Delta\chi^2`$ and $`\chi^2`$-of-the-shift columns coincide. In the executed
+notebook the $`\chi^2`$ of the shift stays below one for every method, from 0.0111
+(BCemu2025) to 0.8435 (SP(k) power law).
+
+The $`\chi^2`$ sections also measure HMcode's own feedback term: against the
+synthetic data vector, HMcode 2020 without feedback (`mead2020`) gives
+$`\chi^2 = 0.6116`$ over the 541 3×2pt entries and $`\chi^2 = 0.1661`$ over the 210
+cosmic-shear entries.
 
 # Computing covariances <a name="computing_covariances"></a>
 
@@ -455,7 +497,7 @@ We assume Cocoa and this project are installed, the Cocoa Conda environment
 is active, the shell is Bash, and the current folder is `cocoa/Cocoa/`.
 
 Compile the project first; the covariance notebook also needs the optional
-covariance build described [below](#computing_covariances).
+covariance build described [above](#computing_covariances).
 
 **Step :one:**: activate Cocoa.
 
@@ -481,9 +523,34 @@ jupyter notebook --no-browser --port=8888
 
 | Notebook | Contents |
 |---|---|
-| [EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) | Data-vector exploration through the project wrappers; inspect the setup cells before running. |
-| [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) | Data-vector exploration through the project wrappers; inspect the setup cells before running. |
-| [EXAMPLE_EVALUATE_COVARIANCE.ipynb](EXAMPLE_EVALUATE_COVARIANCE.ipynb) | G, SSC, cNG, total, separate 1h–4h matter trispectra and matrix diagnostics. |
+| [EXAMPLE_EVALUATE1.ipynb](EXAMPLE_EVALUATE1.ipynb) | 3×2pt: $`C_\ell^{gs}`$, $`\gamma_t(\theta)`$, $`C_\ell^{gg}`$ with and without the Limber approximation, and $`w(\theta)`$, through wrapper functions defined in the notebook; parameter and binning changes, [tabulated-simulation feedback](#baryons_notebooks), `AccuracyBoost`, $`\chi^2`$ on the forecast covariance (541 entries) with quadrature and interpolation checks, and the [bfmt feedback study](#baryons_notebooks). |
+| [EXAMPLE_EVALUATE2.ipynb](EXAMPLE_EVALUATE2.ipynb) | Cosmic shear: $`C_\ell^{EE}`$, with a check that NLA gives no B modes, and $`\xi_\pm(\theta)`$, through the same kind of wrappers; parameter and binning changes, tabulated-simulation feedback, `AccuracyBoost`, and $`\chi^2`$ on the forecast covariance (210 entries) with quadrature and interpolation checks. |
+| [EXAMPLE_EVALUATE_COVARIANCE.ipynb](EXAMPLE_EVALUATE_COVARIANCE.ipynb) | G, SSC, cNG, total, separate 1h–4h matter trispectra and matrix diagnostics; writes the `covariance/forecast_real.npz` that the $`\chi^2`$ sections read. |
+
+The shipped `DESY6.dataset` holds placeholders, so the $`\chi^2`$ sections of both
+evaluate notebooks install three inputs of their own: the `total` matrix of
+`covariance/forecast_real.npz`, the `DESY6.mask` scale cuts and a synthetic data
+vector, the notebook's fiducial prediction. Run the covariance notebook first,
+or write the same archive with the CLI:
+
+```bash
+python ./projects/des_y6/covariance/compute_covariance.py ./projects/des_y6/EXAMPLE_EVALUATE_COVARIANCE.yaml --output ./projects/des_y6/covariance/forecast_real.npz
+```
+
+Without that file the $`\chi^2`$ cells stop with `FileNotFoundError`. Start with
+the cosmic-shear notebook: it introduces the stages and wrappers on one probe,
+and `EXAMPLE_EVALUATE1.ipynb` extends them to the lens galaxies.
+
+```mermaid
+flowchart TD
+  A["EXAMPLE_EVALUATE_COVARIANCE.ipynb or the CLI with --output"] --> B["covariance/forecast_real.npz: forecast total"]
+  B --> C["EXAMPLE_EVALUATE2.ipynb: cosmic shear, chi2 on 210 entries"]
+  B --> D["EXAMPLE_EVALUATE1.ipynb: 3x2pt, chi2 on 541 entries, bfmt study"]
+  C --> D
+  E["data/DESY6.mask: scale cuts"] --> C
+  E --> D
+  F["bfmt block and its emulators"] --> D
+```
 
 Choose the Python kernel from the activated Cocoa environment and restart it
 after recompiling. The [covariance guide](covariance/README.md) explains the
@@ -588,7 +655,6 @@ emulator are not distributed here. The hybrid examples use shared theory network
 Data-vector spectra use their own wrappers; covariance spectra use separate
 all-pairs calculations.
 
-The [original Cosmosis comparison](https://github.com/joaoreboucas1/y6_code_comparison)
-used altered spin prefactors. This project now uses the shared core's
-standard prefactors; the earlier comparison does not validate the current
-settings.
+The [Cosmosis comparison](https://github.com/joaoreboucas1/y6_code_comparison)
+used altered spin prefactors. This project uses the shared core's standard
+prefactors, so that comparison does not validate these settings.
