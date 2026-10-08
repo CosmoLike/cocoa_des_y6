@@ -1,4 +1,9 @@
-"""NLA/TATT example regressions use every full-precision vector entry."""
+"""Compare both frozen examples with their full-precision reference vectors.
+
+A regression test reruns a frozen configuration and compares the result
+with the values saved in the frozen state. Every entry of the 1300-entry
+vector is compared, for the NLA and the TATT intrinsic-alignment models.
+"""
 
 import numpy as np
 import pytest
@@ -13,6 +18,12 @@ def test_frozen_example(example, tatt, tmp_path):
 
     rtol=1e-8 and atol=1e-14 are regression guards, not a claim of survey
     accuracy. The identity covariance gives no meaningful DES Y6 error bar.
+
+    Arguments:
+      example = "example1" (3x2pt) or "example2" (cosmic shear)
+      tatt = False for the NLA model, True for TATT; the two parametrize
+             decorators run every combination of the listed values
+      tmp_path = a temporary folder pytest creates for this test
     """
     u.require_cocoa_environment()
     u.verify_frozen()
@@ -30,6 +41,8 @@ def test_frozen_example(example, tatt, tmp_path):
     # xi+ and xi- each contain 10 source pairs x 26 angular bins.
     assert np.any(vector[:260] != 0.0)
     assert np.any(vector[260:520] != 0.0)
+    # Example 2 is cosmic shear only: its 780 galaxy entries (624 gamma_t
+    # and 156 w) stay zero.
     if example == "example2":
         np.testing.assert_array_equal(vector[520:], np.zeros(780))
     else:

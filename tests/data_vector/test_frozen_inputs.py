@@ -6,6 +6,14 @@ import cocoa_test_utils as u
 
 
 def test_referenced_inputs_and_layout():
+    """Check that the frozen data folder holds exactly the selected inputs.
+
+    The frozen descriptor must select the dummy data vector, the identity
+    covariance and the all-ones mask; the unselected DESY6.cov and
+    DESY6.mask must be absent; the n(z) files must be well formed and
+    identical to the project's; the data and mask files must index 1300
+    entries.
+    """
     u.verify_frozen()
     data = u.FROZEN_DIR/"data"
     assert not (data/"DESY6.cov").exists()
@@ -16,6 +24,7 @@ def test_referenced_inputs_and_layout():
     assert "mask_file = ones.mask" in descriptor
     lens = np.loadtxt(fname=data/"DESY6_lens.nz")
     source = np.loadtxt(fname=data/"DESY6_source.nz")
+    # n(z) tables: a z column plus one column per bin (6 lens, 4 source)
     assert lens.shape[1] == 7
     assert source.shape[1] == 5
     for table in (lens, source):
@@ -33,6 +42,12 @@ def test_referenced_inputs_and_layout():
 
 
 def test_tatt_reference_exercises_second_order_terms():
+    """Check that the TATT reference differs from NLA where IA enters.
+
+    Intrinsic alignments enter cosmic shear and galaxy-galaxy lensing, the
+    first 1144 entries, so the TATT reference must differ there; the
+    galaxy clustering entries must be identical.
+    """
     u.verify_frozen()
     nla = np.load(file=u.FROZEN_DIR/"example1_nla.npy", allow_pickle=False)
     tatt = np.load(file=u.FROZEN_DIR/"example1_tatt.npy", allow_pickle=False)

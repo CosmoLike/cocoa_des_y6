@@ -4,11 +4,13 @@
 2. [Running the production CLI](#command-line)
 3. [Running the notebook](#notebook)
 4. [Output files and figures](#outputs)
-5. [Appendix](#appendix)
+5. [Running the tests](#tests)
+6. [Appendix](#appendix)
    1. [FAQ: Which survey inputs are used?](#survey-inputs)
    2. [FAQ: Which measurement layout is used?](#layout)
    3. [FAQ: What does the calculation include?](#model)
-   4. [FAQ: How can users check numerical accuracy?](#accuracy)
+   4. [FAQ: Which accuracy settings are available?](#accuracy-settings)
+   5. [FAQ: How can users check numerical accuracy?](#accuracy)
 
 # Overview <a name="overview"></a>
 
@@ -122,24 +124,62 @@ jupyter notebook --no-browser --port=8888
 | File under `covariance/` | Contents |
 |---|---|
 | `production_covariance.npz` | CLI result: full G, SSC, cNG, total, signal, coordinates, ordering, settings and stage timings. |
-| `forecast_real.npz` | Notebook result: full matrices and resolved inputs. |
+| `forecast_real.npz` | Notebook result: full matrices and resolved inputs. The $`\chi^2`$ sections of both evaluate notebooks read its `total`. |
 | `forecast_selected.npz` | Notebook result after the optional 541-entry selection, with original row indices. |
 | `forecast_camb.npz` | Notebook's prepared CAMB power and background arrays. |
 
-Generated NPZ files in this folder are ignored by Git. The final notebook
+Generated NPZ files in this folder are ignored by Git. The notebook's save
 cell replaces its own output files; files under `data/` remain unchanged.
+The CLI writes the same archive layout: pass
+`--output ./projects/des_y6/covariance/forecast_real.npz` to give the evaluate
+notebooks their covariance without running this notebook.
 
 | Notebook figure | Interpretation |
 |---|---|
 | Matter trispectra | Separate 1h, combined 2h, 3h, 4h and summed terms before survey projection. |
 | Total correlation matrix | Total covariance divided by its diagonal rms products. |
 | Component maps | G, SSC and cNG, normalized by the total diagonal rms products. |
+| Error bars | Standard deviations $`\sqrt{C_{ii}}`$ of the first row of each probe for the Gaussian and the total matrix, then the change of the total relative to the Gaussian, in percent. |
+| Correlations after the cut | The selected total, drawn above the diagonal, beside the selected Gaussian-only matrix, drawn below it, on the 541 `DESY6.mask` entries; differences between mirror-image points are correlations that SSC and cNG add. |
 
 The notebook reports matrix positivity before and after applying
 `DESY6.mask` to both axes. Positivity is a matrix diagnostic; it does not
 establish physical fidelity or integration convergence. The
-[test guide](../tests/README.md#covariance) describes the reduced assembly
+[test guide](../tests/covariance/README.md) describes the reduced assembly
 checks separately.
+
+# Running the tests <a name="tests"></a>
+
+See the [test guide](../tests/covariance/README.md) for the small adapter
+checks and their limits. They do not establish full-survey convergence.
+
+We assume Cocoa and this project are installed, the Cocoa Conda environment
+is active, the shell is Bash, and the current folder is `cocoa/Cocoa/`.
+
+**Step :one:**: activate Cocoa.
+
+```bash
+source start_cocoa.sh
+```
+
+**Step :two:**: enable the covariance build.
+
+```bash
+unset IGNORE_COSMOLIKE_DES_Y6_COVARIANCE
+```
+
+**Step :three:**: compile.
+
+```bash
+source ./projects/des_y6/scripts/compile_des_y6.sh
+```
+
+**Step :four:**: run the covariance checks.
+
+```bash
+python -m pytest ./projects/des_y6/tests/covariance
+```
+
 
 # Appendix <a name="appendix"></a>
 
@@ -249,35 +289,50 @@ zero-wavenumber response. Higher moments retain direct integrals. See
 [the core covariance documentation](https://github.com/CosmoLike/cocoa-cosmolike-core/tree/main/cosmolike/covariances)
 for that prescription and its limits.
 
-## FAQ: How can users check numerical accuracy? <a name="accuracy"></a>
+## FAQ: Which accuracy settings are available? <a name="accuracy-settings"></a>
 
-The baseline lives in [`default.yaml`](default.yaml). Override its controls
-inside the evaluate YAML's `covariance` block and save each result to a
-separate output. Reinitialize notebook inputs after changing accuracy.
+Baseline values come from [`default.yaml`](default.yaml). Override them in
+the evaluate YAML's `covariance` block or pass them to `survey.configuration`.
+Reinitialize notebook inputs after changing the settings.
 
-| Control | Default | Scope |
+| Control | Baseline | Purpose |
 |---|---:|---|
-| `accuracy_boost` | 1 | Covariance interpolation and multipole-cutoff refinement. |
-| `integration_accuracy` | 0 | Quadrature level, independent of interpolation refinement. |
-| `power_accuracyboost` | 8 | Global matter-power table refinement. |
-| `ell_max` | 100000 | Real-space transform cutoff. |
-| `mask_ell_max` | 32768 | Spherical-cap background-variance cutoff. |
-| `nonlimber_lmax` | 1000 | Gaussian non-Limber cutoff. |
-| `nonlimber_accuracyboost` | 1 | Gaussian non-Limber distance-grid refinement. |
+| `accuracy_boost` | `1` | Overall table and cutoff refinement; 1, 2, 4 or 8. |
+| `integration_accuracy` | `0` | Independent quadrature level, 0 through 4. |
+| `power_accuracyboost` | `8` | Subdivisions of input log-k intervals; multiplied by the global boost. |
+| `ell_max` | `100000` | Real-space transform cutoff; Fourier measurement bands stay fixed. |
+| `mask_ell_max` | `32768` | Survey-footprint spectrum cutoff. |
+| `ng_ell_intervals` | `127` | Base log-multipole intervals for non-Gaussian interpolation. |
+| `non_gaussian_accuracyboost` | `1` | Refinement of the non-Gaussian multipole grid. |
+| `window_accuracyboost` | `1` | Lensing-window interpolation refinement. |
+| `core_accuracyboost` | `1` | Shared core interpolation refinement for this calculation. |
+| `response_step` | `5e-05` | Half-width of the log-k response derivative; divided by the global boost. |
+| `nonlimber_lmax` | `1000` | Gaussian gg/gs non-Limber correction cutoff. |
+| `nonlimber_accuracyboost` | `1` | Gaussian non-Limber distance-grid refinement. |
 
-`power_accuracyboost: 8` prepares 11,993 samples from each original
-1,500-wavenumber power table using natural cubic interpolation. The C
-readers retain linear lookup. This preparation addresses cancellation in
-the four-halo trispectrum; it does not refine ordinary data-vector tables.
-CAMB's own accuracy and k range are separate inputs in `theory.camb.extra_args`.
-
-| `integration_accuracy` | Ordinary quadrature nodes per panel | Wynn-tail nodes per panel |
+| `integration_accuracy` | Ordinary nodes per panel | Wynn-tail nodes per panel |
 |---|---:|---:|
 | 0 | 96 | 32 |
 | 1 | 128 | 64 |
 | 2 | 256 | 128 |
 | 3 | 512 | 256 |
 | 4 | 1024 | 512 |
+
+The default power refinement prepares 11,993 samples from 1,500 inputs for
+linear, nonlinear and cold-matter power. It refines interpolation, not the
+Boltzmann solution itself, and does not affect ordinary data-vector runs.
+Thread counts are environment settings, not accuracy or YAML keys.
+
+Compare G, SSC, cNG and total, including off-diagonal elements, positivity
+and generalized variance ratios. Keep the cosmology, catalog and measured
+bins fixed while testing one control at a time. Integration, interpolation,
+cutoff and parameter-error convergence are separate questions.
+
+## FAQ: How can users check numerical accuracy? <a name="accuracy"></a>
+
+The baseline lives in [`default.yaml`](default.yaml). Override its controls
+inside the evaluate YAML's `covariance` block and save each result to a
+separate output. Reinitialize notebook inputs after changing accuracy.
 
 Compare G, SSC, cNG and total separately, including off-diagonal entries,
 positivity and generalized variance ratios. Keep the cosmology, catalog

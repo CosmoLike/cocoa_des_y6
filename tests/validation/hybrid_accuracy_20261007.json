@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-07",
+  "checks": {
+    "data_vector": {
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "optional_models": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "covariance": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "tests": 36,
+  "omp_threads": 4,
+  "blas_threads": 1,
+  "source_files": {
+    "tests/conftest.py": "62e26347038b648c5c7e32271c30d160f1de4242956126dc0c90ff52d7e8ea11",
+    "tests/vector_worker.py": "798295be04e217f8ca10ae150c9f377843921c128ae05946e63c185545f9ad10",
+    "tests/generate_frozen_reference.py": "8ed8bc7fa0f12f3857cced8f353702230f46004b7ddac9c74eb4bebdd9b34f91",
+    "tests/cocoa_test_utils.py": "a9ae83f1273eaaa87ee33d711870ead97396da2ea869e5bf60e557d9d34b78fa",
+    "tests/covariance/conftest.py": "00e582db6c9305db67c1b66cc190c947f2c21007462a4948040ebd67ffe6f9ff",
+    "tests/covariance/test_forecast.py": "c948bdd74f7493e06ef85fbab15c0de713b929cf6043f1c915fde0e00060fd46",
+    "tests/data_vector/test_photoz_conventions.py": "8392a4eddd2097f3de8c232238de9eb38514c8f16bd324b8dbb6e21d26a2e186",
+    "tests/data_vector/test_dataset_validation.py": "88786f1a362e6399a79fe8308cd2317b7f3159fcb81e228783bc565e30a63eda",
+    "tests/data_vector/test_covariance_configuration.py": "4c5cf5aaf702f5f2b02902ee8bf2c2c68cd32c6d6320a32c1d4fd11b8d0e2095",
+    "tests/data_vector/test_optional_models.py": "2135e4fafd72076f2252d51f7bdea56a5817181adc307d69edc84d5e56cc0e6f",
+    "tests/data_vector/test_frozen_inputs.py": "4ef602e770a6f1afd27489e195c82185c8d94d8787dd01a43037e49b3ebfbdff",
+    "tests/data_vector/test_accuracy.py": "2412f5e25fc40689b1de6d44366bc0bfd8561d46bcdb3ebf685946080ae63e2a",
+    "tests/data_vector/test_nonlimber.py": "a74a63568eb5df5d5f6504ed2e129bcd6b11075315aa50f9e663ef26d724ea60",
+    "tests/data_vector/test_probe_selections.py": "989a4cda4432c9b76567aa41b110d3948485262fb842c13091bf6340bdd27600",
+    "tests/data_vector/test_cache_consistency.py": "4294b9a555bfbcef93c11650a0a8a472e885e32d61cff617e0e288040d6db763",
+    "tests/data_vector/test_examples.py": "98dafa7d7885fec57a8ccaaf0a8dd205a68d9bc1faf3a6cf152cff3bba813960"
+  },
+  "frozen_references_changed": false,
+  "scope": "Regression, finite accuracy-refinement diagnostics, probe-local non-Limber switches, CPU hybrid YAMLs and external BCEmu restoration. The identity covariance is not a measured DES Y6 likelihood."
+}
