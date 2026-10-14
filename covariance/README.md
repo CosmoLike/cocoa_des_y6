@@ -298,7 +298,7 @@ Reinitialize notebook inputs after changing the settings.
 | Control | Baseline | Purpose |
 |---|---:|---|
 | `accuracy_boost` | `1` | Overall table and cutoff refinement; 1, 2, 4 or 8. |
-| `integration_accuracy` | `0` | Independent quadrature level, 0 through 4. |
+| `integration_accuracy` | `0` | Independent quadrature level, 0 through 6. |
 | `power_accuracyboost` | `8` | Subdivisions of input log-k intervals; multiplied by the global boost. |
 | `ell_max` | `100000` | Real-space transform cutoff; Fourier measurement bands stay fixed. |
 | `mask_ell_max` | `32768` | Survey-footprint spectrum cutoff. |
@@ -317,6 +317,13 @@ Reinitialize notebook inputs after changing the settings.
 | 2 | 256 | 128 |
 | 3 | 512 | 256 |
 | 4 | 1024 | 512 |
+| 5 | 2048 | 1024 |
+| 6 | 4096 | 2048 |
+
+The 2048- and 4096-point rules apply GSL’s stored 1024-point rule on
+two and four equal subintervals of each physical panel. They increase
+resolution without generating higher-order weights. Defaults and levels
+0 through 4 retain their existing behavior.
 
 The default power refinement prepares 11,993 samples from 1,500 inputs for
 linear, nonlinear and cold-matter power. It refines interpolation, not the
