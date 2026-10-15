@@ -19,13 +19,6 @@ This project evaluates DES Y6 galaxy clustering, galaxy–galaxy lensing and
 cosmic shear in [CoCoA](https://github.com/CosmoLike/cocoa). It provides Cobaya
 data-vector likelihoods, a covariance forecast CLI, notebooks and tests.
 
-> [!WARNING]
-> **CLI for production; notebook wrappers for exploration.** Run production
-> and HPC calculations from YAML through the `_interface` bindings.
-> Notebook `_wrapper` APIs expose intermediate quantities through Armadillo,
-> pybind11 and CARMA. Both routes call the same C kernels; copying and
-> rearranging notebook arrays adds overhead.
-
 > [!IMPORTANT]
 > **The shipped likelihood uses dummy data.** `DESY6.dataset` selects a
 > 1,300-entry dummy vector, identity covariance and all-ones mask. Its
@@ -60,14 +53,6 @@ source start_cocoa.sh
 ```bash
 source ./projects/des_y6/scripts/compile_des_y6.sh
 ```
-
-> [!WARNING]
-> CosmoLike supports the optimized strict-IEEE default build and
-> `COSMOLIKE_DEBUG_MODE`. `COSMOLIKE_AGGRESSIVE_MODE` is retired because its
-> fast-math configuration produced incorrect covariance inverses. Unset it
-> before compiling. Do not enable `-ffast-math`, `-Ofast`,
-> `-funsafe-math-optimizations`, `-fassociative-math`, `-ffinite-math-only`,
-> `-freciprocal-math`, `-fno-signed-zeros` or `-fno-trapping-math`.
 
 # Computing data vectors <a name="data-vectors"></a>
 
@@ -203,6 +188,17 @@ $`\chi^2 = 0.6116`$ over the 541 3×2pt entries and $`\chi^2 = 0.1661`$ over the
 cosmic-shear entries.
 
 # Computing covariances <a name="computing_covariances"></a>
+
+> [!WARNING]
+> **CLI for production; notebook wrappers for exploration.**
+>
+> Run production and HPC covariance calculations from YAML through the
+> `_interface` bindings. Notebook `_wrapper` APIs expose intermediate
+> quantities for exploration; copying and rearranging their arrays adds
+> overhead. Both routes call the same C kernels.
+>
+> For timing measurements, see
+> [Cocoa's main README](https://github.com/CosmoLike/cocoa#overview).
 
 The production CLI saves G, SSC, cNG and total before scale cuts. It reads
 [the covariance evaluate YAML](EXAMPLE_EVALUATE_COVARIANCE.yaml) and calls the shared C kernels.

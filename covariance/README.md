@@ -26,6 +26,9 @@ forecast has **1,300 entries before cuts**.
 > Armadillo, pybind11 and CARMA, with conversion and rearrangement overhead.
 > Both routes use the same C kernels and survey settings.
 
+Construction timings and measurement conditions are maintained in
+[Cocoa's main README](https://github.com/CosmoLike/cocoa#overview).
+
 > [!IMPORTANT]
 > This forecast is not the supplied DES survey likelihood covariance.
 > The active dataset contains dummy data and a 1,300-entry identity
