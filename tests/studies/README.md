@@ -14,7 +14,7 @@ Akima after fixed `photoz_histogram_akima_factor: 3`, `5` or `7` preparation.
 Both paths always use uniform-grid lookup. The first factor never changes
 with numerical accuracy.
 
-![Original, three-, five- and seven-point reconstructions](../nz_akima_preparation.png)
+![Original, three-, five- and seven-point reconstructions](results/nz_akima_preparation.png)
 
 The preparation points lie at these fractions of each original bin width,
 measured from its left edge:
