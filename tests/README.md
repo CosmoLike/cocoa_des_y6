@@ -76,7 +76,11 @@ python ./projects/des_y6/EXAMPLE_EMUL2_MINIMIZE1.py --check
 python ./projects/des_y6/EXAMPLE_EMUL2_MINIMIZE2.py --check
 ```
 
-The [optional n(z) reconstruction study](studies/README.md) compares original
-cubic and 3/5/7-point Akima curves, bin probabilities and model-vector Δχ².
-It runs only when explicitly requested, outside routine pytest. The numerical
-original-default versus original-refined comparison is reported separately.
+## Optional n(z) reconstruction study
+
+The [reconstruction guide](studies/README.md) explains the original cubic
+and fixed 3/5/7-point Akima options and shows their illustrative curves.
+**DES Y6 is excluded from statistical Δχ² comparisons:** its supplied
+identity metric is not a physical survey covariance. The measured studies
+are in the other seven projects; these expensive comparisons are outside
+routine pytest.
