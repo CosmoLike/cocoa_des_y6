@@ -76,18 +76,19 @@ is regenerated, and no HMcode feedback is mixed with the external ratio.
 Every likelihood default YAML exposes `photoz_histogram_akima: 0`:
 
 - **0 — original midpoint curve:** keeps the existing reconstruction. With the default `photoz_interpolation_type: 0`, a natural cubic passes through the histogram-bin centres before the uniform lookup is prepared.
-- **1 — 3× histogram + Akima:** first represents each uniform input bin by three equal-density cells, then fits Akima through their centres. For irregular bins, the preparation cells receive overlap-weighted average densities. Both source and lens samples use the choice; the separate cluster-redshift model is unchanged.
+- **1 — histogram + Akima (default factor 3):** first represents each uniform input bin by three equal-density cells, then fits Akima through their centres. For irregular bins, the preparation cells receive overlap-weighted average densities. Both source and lens samples use the choice; the separate cluster-redshift model is unchanged.
 
 **Step :one:**: Set the reconstruction and the tested integration level inside the chosen likelihood's YAML block:
 
 ```yaml
 photoz_histogram_akima: 1
+photoz_histogram_akima_factor: 3
 integration_accuracy: 0
 ```
 
 The test uses level 0 for a software comparison. Its identity covariance cannot establish a statistically adequate integration level. The level-6 comparison below is an arithmetic diagnostic only.
 
-The **first factor three is hardcoded** and independent of every accuracy boost. It retains the original centre and adds points at one-sixth and five-sixths of each uniform bin. The default second stage subdivides each Akima polynomial in two; it does not refit a natural cubic. Runtime queries evaluate these same Akima polynomials by direct uniform-grid indexing, without a binary search. `photoz_interpolation_type` controls only mode 0; `photoz_zmid_convention` still controls how input coordinates are interpreted in both modes.
+The **first factor is chosen explicitly** with `photoz_histogram_akima_factor: 3` (default), `5` or `7`, independently of every accuracy boost. The comparison below uses factor 3. It retains the original centre and adds points at one-sixth and five-sixths of each uniform bin. The default second stage subdivides each Akima polynomial in two; it does not refit a natural cubic. Runtime queries evaluate these same Akima polynomials by direct uniform-grid indexing, without a binary search. `photoz_interpolation_type` controls only mode 0; `photoz_zmid_convention` still controls how input coordinates are interpreted in both modes.
 
 The figure uses this project's **compiled readers and stored input histogram**. The left panel overlays both reconstructions at the same bin edges; the right panel compares original-bin probability redistribution for every source/lens distribution.
 
@@ -160,7 +161,66 @@ python projects/des_y6/tests/generate_nz_reconstruction_figures.py
 The test asserts selection, finite outputs, unchanged covariance and exact cache round trips; it prints the measured model distance without imposing a preferred physical reconstruction. Set `COCOA_NZ_REPORT_DIR` to save fresh full-precision vectors and the probability audit. To reproduce the refined reference, rerun with `COCOA_NZ_INTEGRATION_ACCURACY=6` and a different output directory; the test defaults to level 0. The figure command reads the committed [measurement record](../nz_reconstruction.json) and [probability arrays](../nz_probability_data.npz), so it does not rerun cosmology. These data-vector checks use a fixed covariance; they do not validate coarse covariance-integration settings for the alternative n(z).
 
 
+<a name="nz-akima-factor"></a>
+### Choosing 3, 5 or 7 points before Akima
+
+`photoz_histogram_akima_factor` accepts **3, 5 or 7**; the default is **3**.
+It is used only with `photoz_histogram_akima: 1`. The first grid never scales
+with an accuracy boost. For uniform bins all three choices retain the bin
+centre; their edge transitions span 1/3, 1/5 or 1/7 of a bin. Irregular bins
+are overlap-remapped onto a uniform grid and need not retain each old centre.
+
+The [four-column illustration](../nz_akima_preparation.png)
+uses the same histogram for all four curves. It illustrates the reconstruction
+choice; the table below uses this project's actual frozen inputs.
+
+DES Y6 uses an identity covariance: every number below is a software distance, **not a survey $\Delta\chi^2$ or an accuracy requirement**.
+
+The model distances use integration level 6 (4096 points per Limber panel),
+the same NLA fiducial, `accuracyboost: 1`, mask and covariance.
+Each entry is $(d_b-d_a)^T C^{-1}(d_b-d_a)$, without parameter refitting.
+These pairwise squared distances are not additive.
+
+| Reconstruction comparison | Refined $\Delta\chi^2$ |
+|---|---:|
+| Original → 3 | 1.031e-06 |
+| Original → 5 | 9.62529e-07 |
+| Original → 7 | 8.69751e-07 |
+| 3 → 5 | 6.28519e-08 |
+| 3 → 7 | 1.07721e-07 |
+| 5 → 7 | 1.34743e-08 |
+
+The test uses level 0 for software checks. The identity metric does not determine a statistically adequate integration level. Level 6 supplies the refined arithmetic comparison.
+
+| Preparation | Practical level | Numerical $\Delta\chi^2$ vs level 6 | 2048→4096 numerical $\Delta\chi^2$ |
+|---|---:|---:|---:|
+| 5 points | 0 (software only) | 4.48115e-05 | 5.90949e-09 |
+| 7 points | 0 (software only) | 5.25356e-05 | 3.21814e-08 |
+
+We assume the shell is bash, the Conda Cocoa environment is active, and the
+current directory is `Cocoa/`.
+
+**Step :one:**: Load the Cocoa environment.
+
+```bash
+source start_cocoa.sh
+```
+
+**Step :two:**: Run both factor comparisons at their measured practical levels.
+
+```bash
+python -m pytest -s projects/des_y6/tests/data_vector/test_nz_akima_factor.py
+```
+
+The test checks 3→5→3 and 3→7→3 cache round trips, fresh YAML agreement and
+unchanged covariance. Set `COCOA_NZ_INTEGRATION_ACCURACY=6` to repeat the refined
+comparison. The [record](../nz_akima_factor.json) includes all measured levels,
+and the [reference vectors](../nz_akima_factor.npz) retain each reconstruction.
+
+
 # Appendix <a name="appendix"></a>
+
+
 
 ## FAQ: Which inputs are tested? <a name="inputs"></a>
 

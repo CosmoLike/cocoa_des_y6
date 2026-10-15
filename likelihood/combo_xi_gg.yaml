@@ -6,9 +6,11 @@ accuracyboost: 1.0
 internal_accuracyboost: 1.0 # C-FAST-PT convolution grid refinement
 nonlimber_accuracyboost: 1.0 # non-Limber distance-grid refinement
 pk_z_refinement: 1 # nested power-table redshift refinement
-# 0: original midpoint curve (default); 1: fixed 3x histogram + Akima.
-# Akima ignores photoz_interpolation_type; its first factor is always 3.
+# 0: original midpoint curve (default); 1: histogram + Akima.
+# Akima ignores photoz_interpolation_type; select its fixed first factor below.
 photoz_histogram_akima: 0
+# Reconstruction choice: 3, 5 or 7; accuracy boosts never change this factor.
+photoz_histogram_akima_factor: 3
 
 photoz_interpolation_type: 0 # cubic spline
 photoz_zmid_convention: 0 # DESY6 files store lower histogram edges
