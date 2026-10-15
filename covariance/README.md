@@ -26,6 +26,9 @@ forecast has **1,300 entries before cuts**.
 > Armadillo, pybind11 and CARMA, with conversion and rearrangement overhead.
 > Both routes use the same C kernels and survey settings.
 
+Construction timings and measurement conditions are maintained in
+[Cocoa's main README](https://github.com/CosmoLike/cocoa#overview).
+
 > [!IMPORTANT]
 > This forecast is not the supplied DES survey likelihood covariance.
 > The active dataset contains dummy data and a 1,300-entry identity
@@ -59,11 +62,19 @@ unset IGNORE_COSMOLIKE_DES_Y6_COVARIANCE
 source ./projects/des_y6/scripts/compile_des_y6.sh
 ```
 
-**Step :five:**: select the OpenMP team size.
+**Step :five:**: Select the number of OpenMP cores (below, we set it to 8).
 
-```bash
-export OMP_NUM_THREADS=8
-```
+  - Linux
+
+        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=close; \
+        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
+        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
+
+  - macOS (arm)
+
+        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=disabled; \
+        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
+        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
 
 **Step :six:**: compute the YAML's covariance.
 
@@ -97,11 +108,19 @@ the shell is Bash, and the current folder is `cocoa/Cocoa/`.
 source start_cocoa.sh
 ```
 
-**Step :two:**: select the OpenMP team size.
+**Step :two:**: Select the number of OpenMP cores (below, we set it to 8).
 
-```bash
-export OMP_NUM_THREADS=8
-```
+  - Linux
+
+        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=close; \
+        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
+        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
+
+  - macOS (arm)
+
+        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=disabled; \
+        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
+        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
 
 **Step :three:**: start Jupyter.
 
@@ -298,7 +317,7 @@ Reinitialize notebook inputs after changing the settings.
 | Control | Baseline | Purpose |
 |---|---:|---|
 | `accuracy_boost` | `1` | Overall table and cutoff refinement; 1, 2, 4 or 8. |
-| `integration_accuracy` | `0` | Independent quadrature level, 0 through 4. |
+| `integration_accuracy` | `0` | Independent quadrature level, 0 through 6. |
 | `power_accuracyboost` | `8` | Subdivisions of input log-k intervals; multiplied by the global boost. |
 | `ell_max` | `100000` | Real-space transform cutoff; Fourier measurement bands stay fixed. |
 | `mask_ell_max` | `32768` | Survey-footprint spectrum cutoff. |
@@ -317,6 +336,13 @@ Reinitialize notebook inputs after changing the settings.
 | 2 | 256 | 128 |
 | 3 | 512 | 256 |
 | 4 | 1024 | 512 |
+| 5 | 2048 | 1024 |
+| 6 | 4096 | 2048 |
+
+The 2048- and 4096-point rules apply GSL’s stored 1024-point rule on
+two and four equal subintervals of each physical panel. They increase
+resolution without generating higher-order weights. Defaults and levels
+0 through 4 retain their existing behavior.
 
 The default power refinement prepares 11,993 samples from 1,500 inputs for
 linear, nonlinear and cold-matter power. It refines interpolation, not the

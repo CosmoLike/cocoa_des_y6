@@ -1,11 +1,14 @@
 # Tests
 
-The DES Y6 tests are divided into two sectors.
+The DES Y6 tests and optional studies are organized as follows.
 
 - [Data-vector and likelihood checks](data_vector/README.md) cover the project
   predictions, frozen inputs and numerical diagnostics.
 - [Covariance checks](covariance/README.md) cover forecast assembly and its
   documented component checks. Covariance generation must be compiled.
+- <a name="optional_studies"></a>[Optional studies](studies/README.md#optional_studies)
+  illustrate the original cubic and 3-, 5- and 7-point Akima
+  reconstructions of the same n(z) histogram.
 
 ```mermaid
 flowchart TD

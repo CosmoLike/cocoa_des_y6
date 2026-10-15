@@ -70,8 +70,6 @@ It also applies BCEmu off/on/off restoration against the same
 gravity-only Takahashi spectrum, checking every probe. No frozen reference
 is regenerated, and no HMcode feedback is mixed with the external ratio.
 
-# Appendix <a name="appendix"></a>
-
 ## FAQ: Which inputs are tested? <a name="inputs"></a>
 
 The tests store their own configuration and input snapshots in `frozen/`.
