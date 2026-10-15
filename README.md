@@ -197,77 +197,11 @@ cosmic-shear entries.
 
 # Computing covariances <a name="computing_covariances"></a>
 
-> [!WARNING]
-> **CLI for production; notebook wrappers for exploration.**
->
-> Run production and HPC covariance calculations from YAML through the
-> `_interface` bindings. Notebook `_wrapper` APIs expose intermediate
-> quantities for exploration; copying and rearranging their arrays adds
-> overhead. Both routes call the same C kernels.
->
-> For timing measurements, see
-> [Cocoa's main README](https://github.com/CosmoLike/cocoa#overview).
-
-The production CLI saves G, SSC, cNG and total before scale cuts. It reads
-[the covariance evaluate YAML](EXAMPLE_EVALUATE_COVARIANCE.yaml) and calls the shared C kernels.
-This is a 1,300-entry analogous forecast; the likelihood still uses its
-dummy inputs. The separate 1,690-entry supplied covariance is not activated.
-
-We assume Cocoa and this project are installed, the Cocoa Conda environment
-is active, the shell is Bash, and the current folder is `cocoa/Cocoa/`.
-
-**Step :one:**: enable this project in `set_installation_options.sh` by commenting out
-`export IGNORE_COSMOLIKE_DES_Y6_CODE=1` before activation.
-
-**Step :two:**: activate Cocoa.
-
-```bash
-source start_cocoa.sh
-```
-
-**Step :three:**: enable covariance generation.
-
-```bash
-unset IGNORE_COSMOLIKE_DES_Y6_COVARIANCE
-```
-
-**Step :four:**: compile the project.
-
-```bash
-source ./projects/des_y6/scripts/compile_des_y6.sh
-```
-
-**Step :five:**: Select the number of OpenMP cores (below, we set it to 8).
-
-  - Linux
-
-        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=close; \
-        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
-        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
-
-  - macOS (arm)
-
-        export OMP_NUM_THREADS=8; export OMP_PROC_BIND=disabled; \
-        export OMP_PLACES=cores; export OMP_DYNAMIC=FALSE; \
-        export OPENBLAS_NUM_THREADS=1; export MKL_NUM_THREADS=1
-
-**Step :six:**: compute the fixed YAML cosmology.
-
-```bash
-python ./projects/des_y6/covariance/compute_covariance.py ./projects/des_y6/EXAMPLE_EVALUATE_COVARIANCE.yaml
-```
-
-Use `--output PATH` for a separate output or `--overwrite` to replace an
-existing computed archive. Paths are relative to `cocoa/Cocoa/`. Threads
-come only from `OMP_NUM_THREADS`, never from the YAML; the runner fixes BLAS
-to one thread. Ordinary likelihoods read their supplied covariance and do
-not generate a new one.
-
-Cobaya's YAML reader supplies the familiar `theory`, `params` and
-`sampler: evaluate` syntax. This runner evaluates one fixed cosmology and
-does not run MCMC. See the [covariance guide](covariance/README.md) for output
-ordering, physics, Gaussian non-Limber/IA limits, plots and test commands,
-and the [accuracy FAQ](#accuracy) for the separate numerical controls.
+The covariance tools compute Gaussian (G), super-sample (SSC), connected
+non-Gaussian (cNG) and total matrices before scale cuts. This is an analogous
+forecast; the likelihood retains its dummy inputs.
+[covariance/README.md](covariance/README.md) explains compilation, the production
+CLI, exploratory notebooks, accuracy settings and output files.
 
 # Running Hybrid Cosmolike-ML emulators <a name="hybrid-emulators"></a>
 
@@ -604,29 +538,10 @@ forecast files, figures and refinement workflow.
 
 # Running the tests <a name="tests"></a>
 
-The tests check NLA/TATT vectors, input validation, cache consistency and
-covariance assembly; [the test guide](tests/README.md) explains their scope.
-We assume the project is enabled in `set_installation_options.sh` and its
-covariance interface is compiled, the Cocoa Conda environment is active,
-the shell is Bash, and the current folder is `cocoa/Cocoa/`.
-
-**Step :one:**: activate Cocoa's private environment.
-
-```bash
-source start_cocoa.sh
-```
-
-**Step :two:**: run the data-vector tests.
-
-```bash
-python -m pytest ./projects/des_y6/tests/data_vector
-```
-
-**Step :three:**: run the separate covariance tests.
-
-```bash
-python -m pytest ./projects/des_y6/tests/covariance
-```
+The `tests/` folder checks likelihood predictions against stored references,
+input validation, cache consistency and covariance assembly.
+[tests/README.md](tests/README.md) describes the checks, how to run them,
+the input data snapshots, and how to refresh them.
 
 # Appendix <a name="appendix"></a>
 
