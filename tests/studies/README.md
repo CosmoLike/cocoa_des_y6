@@ -1,5 +1,13 @@
 # Histogram reconstruction study
 
+## :interrobang: FAQ: What are optional studies? <a name="optional_studies"></a>
+
+This guide illustrates the n(z) reconstruction choices. DES Y6 has no
+statistical $\Delta\chi^2$ study because its supplied identity matrix is not
+a physical survey covariance.
+
+## Histogram reconstructions
+
 The source/lens reconstruction options are available in every likelihood YAML:
 `photoz_histogram_akima: 0` keeps the original midpoint curve; value `1` selects
 Akima after fixed `photoz_histogram_akima_factor: 3`, `5` or `7` preparation.
@@ -20,6 +28,3 @@ measured from its left edge:
 All three factors retain the original bin centre. More points narrow the
 smoothed edge; all three Akima curves still redistribute probability between
 bins.
-
-DES Y6 is excluded from the statistical Δχ² study because its current supplied
-identity metric is not a physical survey covariance.

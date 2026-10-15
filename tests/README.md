@@ -76,11 +76,7 @@ python ./projects/des_y6/EXAMPLE_EMUL2_MINIMIZE1.py --check
 python ./projects/des_y6/EXAMPLE_EMUL2_MINIMIZE2.py --check
 ```
 
-## Optional n(z) reconstruction study
+<a name="optional_studies"></a>
 
-The [reconstruction guide](studies/README.md) explains the original cubic
-and fixed 3/5/7-point Akima options and shows their illustrative curves.
-**DES Y6 is excluded from statistical Δχ² comparisons:** its supplied
-identity metric is not a physical survey covariance. The measured studies
-are in the other seven projects; these expensive comparisons are outside
-routine pytest.
+> [!TIP]
+> For optional studies, see the [study FAQ](studies/README.md#optional_studies).

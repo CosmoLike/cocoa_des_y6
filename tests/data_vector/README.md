@@ -70,18 +70,6 @@ It also applies BCEmu off/on/off restoration against the same
 gravity-only Takahashi spectrum, checking every probe. No frozen reference
 is regenerated, and no HMcode feedback is mixed with the external ratio.
 
-<a name="nz-reconstruction"></a>
-<a name="nz-akima-factor"></a>
-### Optional n(z) reconstruction study
-
-The [reconstruction guide](../studies/README.md) explains the original cubic
-and fixed 3-, 5- and 7-point Akima options. DES Y6 has no statistical Δχ² row
-because its supplied identity metric is not a physical survey covariance.
-The seven other projects provide the measured model-choice and numerical
-accuracy comparisons. These expensive studies are **excluded from ordinary pytest discovery**;
-the ordinary frozen likelihood checks remain unchanged.
-
-
 ## FAQ: Which inputs are tested? <a name="inputs"></a>
 
 The tests store their own configuration and input snapshots in `frozen/`.
