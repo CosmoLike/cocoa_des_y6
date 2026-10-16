@@ -5,6 +5,17 @@ exercise cache invalidation, input validation and probe selection. The active
 likelihood has a dummy vector and identity covariance; the checks do not
 validate a measured DES Y6 likelihood.
 
+The shared check families of the CosmoLike projects and the mechanisms
+behind them are documented once in
+[the shared data-vector checks](https://github.com/CosmoLike/cocoa-cosmolike-core/blob/main/README.md#dv_checks)
+of the CosmoLike core. This suite compares data vectors, not
+$`\chi^2`$: of the shared families it uses the frozen-snapshot
+protection and a vector-level variant of the accuracy checks, and this
+file records what it runs and requires.
+Its example checks deviate from the shared naming convention by design:
+one consolidated `test_examples.py` covers them (the convention's
+`test_exampleN.py` files do not exist here).
+
 | Check | Configuration |
 |---|---|
 | Full-vector reference comparison | 3×2pt, IA modeling: NLA |
@@ -58,8 +69,11 @@ python -m pytest ./projects/des_y6/tests/data_vector
 `nonlimber_accuracyboost` and, for TATT, `internal_accuracyboost`. The default
 must reproduce its frozen vector. Refined vectors must be finite; per-probe
 maximum absolute and peak-normalized changes are printed as diagnostics.
-The dummy identity covariance cannot supply a meaningful survey chi-squared
-accuracy threshold, so the test does not invent one.
+The [shared accuracy family](https://github.com/CosmoLike/cocoa-cosmolike-core/blob/main/README.md#dv_accuracy)
+scores such refinements as a chi-squared response under the survey
+covariance; this project's dummy identity covariance cannot supply a
+meaningful survey chi-squared accuracy threshold, so the test does not
+invent one.
 
 `test_nonlimber.py` switches gg or galaxy–shear projection individually,
 checks that only the selected block changes, then requires exact restoration.
@@ -76,9 +90,10 @@ The tests store their own configuration and input snapshots in `frozen/`.
 The generator copies the active descriptor with the inputs it references
 and the two evaluate YAMLs, writes the resolved configurations, reference
 vectors and synthetic data vectors, then records the hash of every file
-under `frozen/` in `tests/manifest_sha256.json`. Every data-vector
-evaluation verifies this manifest; the hybrid and BCEmu checks verify it
-too but evaluate the live project inputs.
+under `frozen/` in `tests/manifest_sha256.json`
+([the shared protection mechanism](https://github.com/CosmoLike/cocoa-cosmolike-core/blob/main/README.md#dv_frozen)).
+Every data-vector evaluation verifies this manifest; the hybrid and
+BCEmu checks verify it too but evaluate the live project inputs.
 
 The active layout has four source bins, six lens bins and 26 angular bins.
 Its 1,300-entry identity covariance supplies no survey weighting. The separate
